@@ -1,0 +1,454 @@
+{
+	"info": {
+		"_postman_id": "bee-monitoring-collection",
+		"name": "Bee Monitoring API",
+		"description": "Collection for testing all endpoints of the Bee Monitoring system",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "auth_url",
+			"value": "http://localhost:8000"
+		},
+		{
+			"key": "hive_url",
+			"value": "http://localhost:8001"
+		},
+		{
+			"key": "monitoring_url",
+			"value": "http://localhost:8002"
+		},
+		{
+			"key": "notification_url",
+			"value": "http://localhost:8003"
+		}
+	],
+	"auth": {
+		"type": "oauth2",
+		"oauth2": []
+	},
+	"item": [
+		{
+			"name": "Auth Service",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{auth_url}}/health",
+							"host": ["{{auth_url}}"],
+							"path": ["health"]
+						}
+					}
+				},
+				{
+					"name": "Create User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"test@example.com\",\n    \"username\": \"testuser\",\n    \"password\": \"testpassword\"\n}"
+						},
+						"url": {
+							"raw": "{{auth_url}}/users/",
+							"host": ["{{auth_url}}"],
+							"path": ["users", ""]
+						}
+					}
+				},
+				{
+					"name": "Get Current User",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{auth_url}}/users/me/",
+							"host": ["{{auth_url}}"],
+							"path": ["users", "me", ""]
+						}
+					}
+				},
+				{
+					"name": "Get All Users (Admin)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{auth_url}}/users/?skip=0&limit=100",
+							"host": ["{{auth_url}}"],
+							"path": ["users", ""],
+							"query": [
+								{
+									"key": "skip",
+									"value": "0"
+								},
+								{
+									"key": "limit",
+									"value": "100"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get User by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{auth_url}}/users/1",
+							"host": ["{{auth_url}}"],
+							"path": ["users", "1"]
+						}
+					}
+				},
+				{
+					"name": "Update User",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"updated@example.com\",\n    \"username\": \"updateduser\"\n}"
+						},
+						"url": {
+							"raw": "{{auth_url}}/users/1",
+							"host": ["{{auth_url}}"],
+							"path": ["users", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Hive Service",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{hive_url}}/health",
+							"host": ["{{hive_url}}"],
+							"path": ["health"]
+						}
+					}
+				},
+				{
+					"name": "Create Hive",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Test Hive\",\n    \"location\": \"Test Location\",\n    \"description\": \"Test Description\"\n}"
+						},
+						"url": {
+							"raw": "{{hive_url}}/hives/",
+							"host": ["{{hive_url}}"],
+							"path": ["hives", ""]
+						}
+					}
+				},
+				{
+					"name": "Get All Hives",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{hive_url}}/hives/?skip=0&limit=100",
+							"host": ["{{hive_url}}"],
+							"path": ["hives", ""],
+							"query": [
+								{
+									"key": "skip",
+									"value": "0"
+								},
+								{
+									"key": "limit",
+									"value": "100"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Hive by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{hive_url}}/hives/1",
+							"host": ["{{hive_url}}"],
+							"path": ["hives", "1"]
+						}
+					}
+				},
+				{
+					"name": "Update Hive",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Updated Hive\",\n    \"location\": \"Updated Location\",\n    \"description\": \"Updated Description\"\n}"
+						},
+						"url": {
+							"raw": "{{hive_url}}/hives/1",
+							"host": ["{{hive_url}}"],
+							"path": ["hives", "1"]
+						}
+					}
+				},
+				{
+					"name": "Create Inspection",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"hive_id\": 1,\n    \"notes\": \"Test inspection\",\n    \"queen_seen\": true,\n    \"queen_cells\": 0,\n    \"disease_signs\": false,\n    \"varroa_count\": 0\n}"
+						},
+						"url": {
+							"raw": "{{hive_url}}/inspections/",
+							"host": ["{{hive_url}}"],
+							"path": ["inspections", ""]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Monitoring Service",
+			"item": [
+				{
+					"name": "Create Sensor",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"hive_id\": 1,\n    \"name\": \"Test Sensor\",\n    \"type\": \"temperature\",\n    \"description\": \"Test Description\"\n}"
+						},
+						"url": {
+							"raw": "{{monitoring_url}}/sensors/",
+							"host": ["{{monitoring_url}}"],
+							"path": ["sensors", ""]
+						}
+					}
+				},
+				{
+					"name": "Get All Sensors",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{monitoring_url}}/sensors/?skip=0&limit=100",
+							"host": ["{{monitoring_url}}"],
+							"path": ["sensors", ""],
+							"query": [
+								{
+									"key": "skip",
+									"value": "0"
+								},
+								{
+									"key": "limit",
+									"value": "100"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Sensor by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{monitoring_url}}/sensors/1",
+							"host": ["{{monitoring_url}}"],
+							"path": ["sensors", "1"]
+						}
+					}
+				},
+				{
+					"name": "Get Sensor Stats",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{monitoring_url}}/sensors/1/stats/",
+							"host": ["{{monitoring_url}}"],
+							"path": ["sensors", "1", "stats", ""]
+						}
+					}
+				},
+				{
+					"name": "Get Sensor Measurements",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{monitoring_url}}/sensors/1/measurements/?limit=100",
+							"host": ["{{monitoring_url}}"],
+							"path": ["sensors", "1", "measurements", ""],
+							"query": [
+								{
+									"key": "limit",
+									"value": "100"
+								},
+								{
+									"key": "start_date",
+									"value": "2024-01-01T00:00:00Z",
+									"disabled": true
+								},
+								{
+									"key": "end_date",
+									"value": "2024-12-31T23:59:59Z",
+									"disabled": true
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Resolve Alert",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{monitoring_url}}/alerts/1/resolve/",
+							"host": ["{{monitoring_url}}"],
+							"path": ["alerts", "1", "resolve", ""]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Notification Service",
+			"item": [
+				{
+					"name": "Create Template (Admin)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Test Template\",\n    \"subject\": \"Test Subject\",\n    \"body\": \"Test Body with {placeholder}\"\n}"
+						},
+						"url": {
+							"raw": "{{notification_url}}/templates/",
+							"host": ["{{notification_url}}"],
+							"path": ["templates", ""]
+						}
+					}
+				},
+				{
+					"name": "Get All Templates",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{notification_url}}/templates/?skip=0&limit=100",
+							"host": ["{{notification_url}}"],
+							"path": ["templates", ""],
+							"query": [
+								{
+									"key": "skip",
+									"value": "0"
+								},
+								{
+									"key": "limit",
+									"value": "100"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Update User Notification Settings",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email_notifications\": true,\n    \"push_notifications\": false,\n    \"notification_frequency\": \"daily\"\n}"
+						},
+						"url": {
+							"raw": "{{notification_url}}/settings/me/",
+							"host": ["{{notification_url}}"],
+							"path": ["settings", "me", ""]
+						}
+					}
+				},
+				{
+					"name": "Get User Notifications",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{notification_url}}/notifications/?skip=0&limit=100",
+							"host": ["{{notification_url}}"],
+							"path": ["notifications", ""],
+							"query": [
+								{
+									"key": "skip",
+									"value": "0"
+								},
+								{
+									"key": "limit",
+									"value": "100"
+								}
+							]
+						}
+					}
+				}
+			]
+		}
+	]
+} 
