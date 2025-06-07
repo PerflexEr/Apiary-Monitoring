@@ -23,8 +23,12 @@ export interface Hive {
   name: string;
   location: string;
   status: 'active' | 'inactive';
+  queen_year: number;
+  frames_count: number;
+  description?: string | null;
+  user_id: number;
   created_at: string;
-  updated_at: string;
+  updated_at: string | null;
 }
 
 export interface SensorData {

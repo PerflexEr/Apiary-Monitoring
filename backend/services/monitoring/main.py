@@ -1,5 +1,5 @@
 from typing import List, Optional
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text, select
@@ -254,3 +254,18 @@ async def resolve_alert(
     if alert is None:
         raise HTTPException(status_code=404, detail="Alert not found")
     return schemas.AlertResponse.model_validate(alert)
+
+
+@app.delete("/sensors/{sensor_id}", status_code=status.HTTP_204_NO_CONTENT)
+@app.delete("/sensors/{sensor_id}/", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_sensor(
+    sensor_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: auth_schemas.User = Depends(get_current_active_user)
+):
+    sensor = await sensor_service.get_sensor(db, sensor_id, current_user.id)
+    if not sensor:
+        raise HTTPException(status_code=404, detail="Sensor not found")
+    await db.delete(sensor)
+    await db.commit()
+    return None

@@ -2,6 +2,7 @@
 import { makeAutoObservable, action, runInAction } from 'mobx';
 import { RootStore } from './RootStore';
 import { monitoringApi } from '../api/requests';
+import type { SensorStats } from '../types/stores';
 
 interface SensorData {
   id: number;
@@ -250,6 +251,78 @@ export class MonitoringStore {
     }
   };
 
+  createSensor = async (sensorData: Omit<SensorResponse, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
+    try {
+      this.setLoading(true);
+      this.setError(null);
+      const response = await monitoringApi.post<SensorResponse>('/sensors/', sensorData);
+      runInAction(() => {
+        this.sensors.push(response.data);
+      });
+      return response.data;
+    } catch (error: any) {
+      console.error('Error creating sensor:', error);
+      runInAction(() => {
+        this.setError(error.message || 'Failed to create sensor');
+      });
+      return null;
+    } finally {
+      runInAction(() => {
+        this.setLoading(false);
+      });
+    }
+  };
+
+  updateSensor = async (sensorId: number, sensorData: Partial<SensorResponse>) => {
+    try {
+      this.setLoading(true);
+      this.setError(null);
+      const response = await monitoringApi.put<SensorResponse>(`/sensors/${sensorId}/`, sensorData);
+      runInAction(() => {
+        const idx = this.sensors.findIndex(s => s.id === sensorId);
+        if (idx !== -1) this.sensors[idx] = response.data;
+      });
+      return response.data;
+    } catch (error: any) {
+      console.error('Error updating sensor:', error);
+      runInAction(() => {
+        this.setError(error.message || 'Failed to update sensor');
+      });
+      return null;
+    } finally {
+      runInAction(() => {
+        this.setLoading(false);
+      });
+    }
+  };
+
+  deleteSensor = async (sensorId: number) => {
+    try {
+      this.setLoading(true);
+      this.setError(null);
+      await monitoringApi.delete(`/sensors/${sensorId}/`);
+      runInAction(() => {
+        this.sensors = this.sensors.filter(s => s.id !== sensorId);
+      });
+      return true;
+    } catch (error: any) {
+      console.error('Error deleting sensor:', error);
+      runInAction(() => {
+        this.setError(error.message || 'Failed to delete sensor');
+      });
+      return false;
+    } finally {
+      runInAction(() => {
+        this.setLoading(false);
+      });
+    }
+  };
+
+  selectedSensor: SensorResponse | null = null;
+  selectSensor = (sensorId: number) => {
+    this.selectedSensor = this.sensors.find(s => s.id === sensorId) || null;
+  };
+
   // Вспомогательные методы для получения данных
   getLatestSensorData = (hiveId: number): SensorData | null => {
     const data = this.sensorData[hiveId];
@@ -266,5 +339,24 @@ export class MonitoringStore {
 
   getUnresolvedAlerts = (): Alert[] => {
     return this.alerts.filter(alert => !alert.isResolved);
+  };
+
+  fetchSensorStats = async (sensorId: number): Promise<SensorStats | null> => {
+    try {
+      this.setLoading(true);
+      this.setError(null);
+      const response = await monitoringApi.get<SensorStats>(`/sensors/${sensorId}/stats/`);
+      return response.data;
+    } catch (error: any) {
+      console.error('Error fetching sensor stats:', error);
+      runInAction(() => {
+        this.setError(error.message || 'Failed to fetch sensor stats');
+      });
+      return null;
+    } finally {
+      runInAction(() => {
+        this.setLoading(false);
+      });
+    }
   };
 }

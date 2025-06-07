@@ -169,4 +169,8 @@ export class NotificationStore {
       this.setLoading(false);
     }
   };
+
+  get unreadCount() {
+    return this.notifications.filter(n => !n.isRead).length;
+  }
 }

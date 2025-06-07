@@ -13,8 +13,8 @@ from .config import SECRET_KEY, ALGORITHM
 
 app = FastAPI(title="Hive Service", version="1.0.0")
 
-# Отключаем автоматическое перенаправление слешей
-app.router.redirect_slashes = False
+# Включаем автоматическое перенаправление слешей
+app.router.redirect_slashes = True
 
 # Настраиваем CORS
 setup_cors(app)

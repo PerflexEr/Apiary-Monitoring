@@ -26,6 +26,8 @@ import {
   Notifications,
   Settings,
   Person,
+  History,
+  Sensors as SensorsIcon
 } from '@mui/icons-material';
 import { rootStore } from '../stores/RootStore';
 
@@ -58,6 +60,8 @@ const Layout: React.FC = observer(() => {
   const menuItems = [
     { text: 'Dashboard', icon: <Dashboard />, path: '/' },
     { text: 'Hives', icon: <Hive />, path: '/hives' },
+    { text: 'Inspections', icon: <History />, path: '/inspections' },
+    { text: 'Sensors', icon: <SensorsIcon />, path: '/sensors' },
     { text: 'Notifications', icon: <Notifications />, path: '/notifications', badge: notificationStore.unreadCount },
     { text: 'Settings', icon: <Settings />, path: '/settings' },
   ];

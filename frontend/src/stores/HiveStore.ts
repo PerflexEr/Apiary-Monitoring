@@ -1,6 +1,7 @@
 // frontend/src/stores/HiveStore.ts
 import { makeAutoObservable, action, runInAction } from 'mobx';
 import type { RootStore } from './RootStore';
+import type { Inspection } from '../types/stores';
 import { hiveApi } from '../api/requests';
 import { getErrorMessage } from '../utils/errorUtils';
 
@@ -13,14 +14,18 @@ interface Hive {
   user_id: number;
   created_at: string;
   updated_at: string | null;
+  queen_year: number;
+  frames_count: number;
 }
 
-interface Inspection {
-  id: number;
-  hiveId: number;
-  date: string;
+// Удаляем локальный интерфейс Inspection, используем глобальный тип
+
+// Добавим тип для создания инспекции
+export interface InspectionCreate {
+  temperature: number;
+  humidity: number;
+  weight: number;
   notes: string;
-  health: 'good' | 'warning' | 'critical';
 }
 
 export class HiveStore {
@@ -70,7 +75,7 @@ export class HiveStore {
     try {
       this.setLoading(true);
       this.setError(null);
-      const response = await hiveApi.get<Hive>(`/hives/${id}`);
+      const response = await hiveApi.get<Hive>(`hives/${id}`);
       runInAction(() => {
         this.selectedHive = response.data;
       });
@@ -89,7 +94,7 @@ export class HiveStore {
     try {
       this.setLoading(true);
       this.setError(null);
-      const response = await hiveApi.post<Hive>('/hives', hiveData);
+      const response = await hiveApi.post<Hive>('hives/', hiveData);
       runInAction(() => {
         this.hives.push(response.data);
       });
@@ -155,7 +160,7 @@ export class HiveStore {
     try {
       this.setLoading(true);
       this.setError(null);
-      const response = await hiveApi.get<Inspection[]>(`/hives/${hiveId}/inspections`);
+      const response = await hiveApi.get<Inspection[]>(`/hives/${hiveId}/inspections/`); // исправлен путь
       runInAction(() => {
         this.inspections = response.data;
       });
@@ -170,13 +175,13 @@ export class HiveStore {
   };
 
   // Добавление новой инспекции
-  createInspection = async (hiveId: number, inspectionData: Partial<Inspection>) => {
+  createInspection = async (hiveId: number, inspectionData: InspectionCreate) => {
     try {
       this.setLoading(true);
       this.setError(null);
       const response = await hiveApi.post<Inspection>(
-        `/hives/${hiveId}/inspections`,
-        inspectionData
+        `/inspections/`, // исправлен путь
+        { ...inspectionData, hive_id: hiveId }
       );
       runInAction(() => {
         this.inspections.push(response.data);

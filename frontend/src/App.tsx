@@ -11,6 +11,8 @@ import HivesPage from './pages/HivesPage';
 import HiveDetailsPage from './pages/HiveDetailsPage';
 import NotificationsPage from './pages/NotificationsPage';
 import SettingsPage from './pages/SettingsPage';
+import InspectionsPage from './pages/InspectionsPage';
+import SensorsPage from './pages/SensorsPage';
 import { CircularProgress, Box } from '@mui/material';
 import iconUrl from './assets/9421017.png';
 
@@ -169,12 +171,20 @@ const App: React.FC = observer(() => {
           element: <HiveDetailsPage />
         },
         {
+          path: 'inspections',
+          element: <InspectionsPage />
+        },
+        {
           path: 'notifications',
           element: <NotificationsPage />
         },
         {
           path: 'settings',
           element: <SettingsPage />
+        },
+        {
+          path: 'sensors',
+          element: <SensorsPage />
         }
       ]
     },

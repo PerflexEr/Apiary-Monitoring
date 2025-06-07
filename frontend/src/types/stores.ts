@@ -24,9 +24,9 @@ export interface Hive {
 export interface Inspection {
   id: number;
   hiveId: number;
-  date: string;
   notes: string;
   health: 'good' | 'warning' | 'critical';
+  created_at: string;
 }
 
 export interface SensorData {

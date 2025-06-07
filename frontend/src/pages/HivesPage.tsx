@@ -23,6 +23,9 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   Warning as WarningIcon,
+  CalendarToday as CalendarTodayIcon,
+  GridOn as GridOnIcon,
+  LocationOn as LocationOnIcon,
 } from '@mui/icons-material';
 import { rootStore } from '../stores/RootStore';
 
@@ -170,8 +173,9 @@ const HivesPage: React.FC = observer(() => {
                     </Box>
                   </Box>
 
-                  <Typography color="text.secondary" gutterBottom>
-                    Location: {hive.location}
+                  <Typography color="text.secondary" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <LocationOnIcon fontSize="small" />
+                    {hive.location}
                   </Typography>
 
                   <Box sx={{ display: 'flex', alignItems: 'center', mt: 2, flexWrap: 'wrap', gap: 1 }}>
@@ -190,15 +194,22 @@ const HivesPage: React.FC = observer(() => {
                     )}
                   </Box>
 
-                  {hive.lastInspection && (
-                    <Typography variant="body2" sx={{ mt: 1 }}>
-                      Last Inspection: {new Date(hive.lastInspection).toLocaleDateString()}
+                  <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <CalendarTodayIcon fontSize="small" />
+                      Год матки: {hive.queen_year}
                     </Typography>
-                  )}
 
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                    Created: {new Date(hive.created_at).toLocaleDateString()}
-                  </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <GridOnIcon fontSize="small" />
+                      Количество рамок: {hive.frames_count}
+                    </Typography>
+
+                    <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <CalendarTodayIcon fontSize="small" />
+                      Создан: {new Date(hive.created_at).toLocaleDateString()}
+                    </Typography>
+                  </Box>
                 </CardContent>
               </Card>
             </Grid>
