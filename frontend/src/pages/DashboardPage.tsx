@@ -14,8 +14,6 @@ import {
 import {
   WarningAmber,
   DeviceThermostat,
-  WaterDrop,
-  Scale,
   VolumeUp,
   Hive as HiveIcon,
 } from '@mui/icons-material';
@@ -180,7 +178,7 @@ const DashboardPage: React.FC = observer(() => {
                   Location: {hive.location}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Status: {hive.status}
+                  Health: {hive.status === 'good' ? 'Healthy' : hive.status === 'warning' ? 'Warning' : hive.status === 'critical' ? 'Critical' : hive.status}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   Created: {new Date(hive.created_at).toLocaleDateString()}

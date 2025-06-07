@@ -38,6 +38,7 @@ class Inspection(Base, TimestampMixin):
     humidity = Column(Float)
     weight = Column(Float)
     notes = Column(String)
+    health = Column(String, nullable=True)  # new field for health status
     user_id = Column(Integer, ForeignKey("users.id"))
 
     # Relationships

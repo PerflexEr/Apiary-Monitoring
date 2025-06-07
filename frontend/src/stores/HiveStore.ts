@@ -1,6 +1,5 @@
 // frontend/src/stores/HiveStore.ts
 import { makeAutoObservable, action, runInAction } from 'mobx';
-import type { RootStore } from './RootStore';
 import type { Inspection } from '../types/stores';
 import { hiveApi } from '../api/requests';
 import { getErrorMessage } from '../utils/errorUtils';
@@ -26,6 +25,7 @@ export interface InspectionCreate {
   humidity: number;
   weight: number;
   notes: string;
+  health: 'good' | 'warning' | 'critical'; // добавлено поле
 }
 
 export class HiveStore {
@@ -35,7 +35,7 @@ export class HiveStore {
   loading = false;
   error: string | null = null;
 
-  constructor(rootStore: RootStore) {
+  constructor() {
     makeAutoObservable(this);
   }
 

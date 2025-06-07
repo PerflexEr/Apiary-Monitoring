@@ -61,7 +61,14 @@ class HiveService(BaseService[models.Hive]):
         stats_result = await db.execute(stats_query)
         stats = stats_result.one()
 
-        # Добавляем статистические поля динамически
+        # Set hive status to latest inspection health
+        if hive.inspections:
+            latest = max(hive.inspections, key=lambda i: i.created_at)
+            hive.status = latest.health or "good"
+        else:
+            hive.status = "good"
+
+        # Add statistics fields
         setattr(hive, 'avg_temperature', stats.avg_temperature)
         setattr(hive, 'avg_humidity', stats.avg_humidity)
         setattr(hive, 'avg_weight', stats.avg_weight)

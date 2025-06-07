@@ -25,7 +25,8 @@ const InspectionsPage: React.FC = () => {
     temperature: 0,
     humidity: 0,
     weight: 0,
-    notes: ''
+    notes: '',
+    health: 'good',
   });
 
   useEffect(() => {
@@ -59,7 +60,8 @@ const InspectionsPage: React.FC = () => {
         temperature: 0,
         humidity: 0,
         weight: 0,
-        notes: ''
+        notes: '',
+        health: 'good',
       });
     } catch (error) {
       console.error('Failed to create inspection:', error);
@@ -146,6 +148,24 @@ const InspectionsPage: React.FC = () => {
                     onChange={handleInputChange}
                   />
                 </Grid>
+                <Grid item xs={12} md={4}>
+                  <FormControl fullWidth>
+                    <InputLabel id="health-select-label">Health</InputLabel>
+                    <Select
+                      labelId="health-select-label"
+                      id="health-select"
+                      name="health"
+                      value={inspectionData.health}
+                      label="Health"
+                      onChange={(e) => setInspectionData(prev => ({ ...prev, health: e.target.value as 'good' | 'warning' | 'critical' }))}
+                      required
+                    >
+                      <MenuItem value="good">Healthy</MenuItem>
+                      <MenuItem value="warning">Warning</MenuItem>
+                      <MenuItem value="critical">Critical</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
                 <Grid item xs={12}>
                   <Button
                     type="submit"
@@ -190,6 +210,9 @@ const InspectionsPage: React.FC = () => {
                         <strong>Заметки:</strong> {inspection.notes}
                       </Typography>
                     )}
+                    <Typography>
+                      <strong>Состояние:</strong> {'health' in inspection ? (inspection as any).health === 'good' ? 'Healthy' : (inspection as any).health === 'warning' ? 'Warning' : (inspection as any).health === 'critical' ? 'Critical' : '—' : '—'}
+                    </Typography>
                   </CardContent>
                 </Card>
               </Grid>

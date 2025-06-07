@@ -94,8 +94,10 @@ const HiveDetailsPage: React.FC = observer(() => {
     e.preventDefault();
     if (id) {
       try {
-        await hiveStore.addInspection(parseInt(id), {
-          date: new Date().toISOString(),
+        await hiveStore.createInspection(parseInt(id), {
+          temperature: 0,
+          humidity: 0,
+          weight: 0,
           notes: inspectionData.notes,
           health: inspectionData.health as 'good' | 'warning' | 'critical',
         });
@@ -167,7 +169,7 @@ const HiveDetailsPage: React.FC = observer(() => {
                     <strong>Location:</strong> {hive.location}
                   </Typography>
                   <Typography>
-                    <strong>Status:</strong> {hive.status}
+                    <strong>Health:</strong> {hive.status === 'good' ? 'Healthy' : hive.status === 'warning' ? 'Warning' : hive.status === 'critical' ? 'Critical' : hive.status}
                   </Typography>
                   <Typography>
                     <strong>Created:</strong> {new Date(hive.created_at).toLocaleDateString()}
@@ -228,10 +230,10 @@ const HiveDetailsPage: React.FC = observer(() => {
                 </TimelineSeparator>
                 <TimelineContent>
                   <Typography variant="h6" component="span">
-                    {new Date(inspection.date).toLocaleDateString()}
+                    {new Date(inspection.created_at).toLocaleDateString()}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Health: {inspection.health}
+                    Health: {inspection.health === 'good' ? 'Healthy' : inspection.health === 'warning' ? 'Warning' : inspection.health === 'critical' ? 'Critical' : '—'}
                   </Typography>
                   <Typography>{inspection.notes}</Typography>
                 </TimelineContent>

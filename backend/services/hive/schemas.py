@@ -9,6 +9,7 @@ class InspectionBase(BaseSchema):
     humidity: float
     weight: float
     notes: Optional[str] = None
+    health: Optional[str] = None  # new field for health status
 
 
 class InspectionCreate(InspectionBase):
@@ -20,6 +21,7 @@ class InspectionUpdate(BaseSchema):
     humidity: Optional[float] = None
     weight: Optional[float] = None
     notes: Optional[str] = None
+    health: Optional[str] = None  # new field for health status
 
 
 class InspectionResponse(InspectionBase):
