@@ -1,7 +1,7 @@
 // frontend/src/stores/HiveStore.ts
 import { makeAutoObservable, action, runInAction } from 'mobx';
 import type { RootStore } from './RootStore';
-import { hivesApi } from '../api/requests';
+import { hiveApi } from '../api/requests';
 import { getErrorMessage } from '../utils/errorUtils';
 
 interface Hive {
@@ -30,9 +30,8 @@ export class HiveStore {
   loading = false;
   error: string | null = null;
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  constructor(private rootStore: RootStore) {
-    makeAutoObservable(this, {}, { autoBind: true });
+  constructor(rootStore: RootStore) {
+    makeAutoObservable(this);
   }
 
   @action
@@ -41,157 +40,154 @@ export class HiveStore {
   }
 
   @action
-  setError(error: string | null) {
-    // Гарантируем, что error всегда строка или null
-    if (error && typeof error !== 'string') {
-      this.error = getErrorMessage(error);
+  setError(error: unknown) {
+    if (error === null) {
+      this.error = null;
     } else {
-      this.error = error;
+      this.error = getErrorMessage(error);
     }
   }
 
-  @action
-  setHives(hives: Hive[]) {
-    this.hives = hives;
-  }
-
-  @action
-  setInspections(inspections: Inspection[]) {
-    this.inspections = inspections;
-  }
-
+  // Получение всех ульев
   fetchHives = async () => {
     try {
       this.setLoading(true);
       this.setError(null);
-
-      console.log('Fetching hives...');
-      const response = await hivesApi.get<Hive[]>('/');
-
+      const response = await hiveApi.get<Hive[]>('hives/');
       runInAction(() => {
-        this.setHives(response.data);
-        console.log('Hives fetched successfully:', response.data);
+        this.hives = response.data;
       });
-    } catch (error: any) {
-      console.error('Error fetching hives:', error);
-      runInAction(() => {
-        this.setError(getErrorMessage(error, 'Failed to fetch hives'));
-      });
+    } catch (error) {
+      console.error('Failed to fetch hives:', error);
+      this.setError(error);
     } finally {
-      runInAction(() => {
-        this.setLoading(false);
-      });
+      this.setLoading(false);
     }
   };
 
+  // Получение конкретного улья по ID
+  fetchHiveById = async (id: number) => {
+    try {
+      this.setLoading(true);
+      this.setError(null);
+      const response = await hiveApi.get<Hive>(`/hives/${id}`);
+      runInAction(() => {
+        this.selectedHive = response.data;
+      });
+      return response.data;
+    } catch (error) {
+      console.error(`Failed to fetch hive ${id}:`, error);
+      this.setError(error);
+      return null;
+    } finally {
+      this.setLoading(false);
+    }
+  };
+
+  // Создание нового улья
+  createHive = async (hiveData: Partial<Hive>) => {
+    try {
+      this.setLoading(true);
+      this.setError(null);
+      const response = await hiveApi.post<Hive>('/hives', hiveData);
+      runInAction(() => {
+        this.hives.push(response.data);
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to create hive:', error);
+      this.setError(error);
+      return null;
+    } finally {
+      this.setLoading(false);
+    }
+  };
+
+  // Обновление улья
+  updateHive = async (id: number, hiveData: Partial<Hive>) => {
+    try {
+      this.setLoading(true);
+      this.setError(null);
+      const response = await hiveApi.put<Hive>(`/hives/${id}`, hiveData);
+      runInAction(() => {
+        const index = this.hives.findIndex(h => h.id === id);
+        if (index !== -1) {
+          this.hives[index] = response.data;
+        }
+        if (this.selectedHive?.id === id) {
+          this.selectedHive = response.data;
+        }
+      });
+      return response.data;
+    } catch (error) {
+      console.error(`Failed to update hive ${id}:`, error);
+      this.setError(error);
+      return null;
+    } finally {
+      this.setLoading(false);
+    }
+  };
+
+  // Удаление улья
+  deleteHive = async (id: number) => {
+    try {
+      this.setLoading(true);
+      this.setError(null);
+      await hiveApi.delete(`/hives/${id}`);
+      runInAction(() => {
+        this.hives = this.hives.filter(h => h.id !== id);
+        if (this.selectedHive?.id === id) {
+          this.selectedHive = null;
+        }
+      });
+      return true;
+    } catch (error) {
+      console.error(`Failed to delete hive ${id}:`, error);
+      this.setError(error);
+      return false;
+    } finally {
+      this.setLoading(false);
+    }
+  };
+
+  // Получение инспекций улья
   fetchHiveInspections = async (hiveId: number) => {
     try {
       this.setLoading(true);
       this.setError(null);
-
-      console.log(`Fetching inspections for hive ${hiveId}...`);
-      const response = await hivesApi.get<Inspection[]>(`/${hiveId}/inspections`);
-
+      const response = await hiveApi.get<Inspection[]>(`/hives/${hiveId}/inspections`);
       runInAction(() => {
-        this.setInspections(response.data);
-        console.log('Inspections fetched successfully:', response.data);
+        this.inspections = response.data;
       });
-    } catch (error: any) {
-      console.error('Error fetching inspections:', error);
-      runInAction(() => {
-        this.setError(getErrorMessage(error, 'Failed to fetch inspections'));
-      });
+      return response.data;
+    } catch (error) {
+      console.error(`Failed to fetch inspections for hive ${hiveId}:`, error);
+      this.setError(error);
+      return [];
     } finally {
-      runInAction(() => {
-        this.setLoading(false);
-      });
+      this.setLoading(false);
     }
   };
 
-  addInspection = async (hiveId: number, inspection: Omit<Inspection, 'id' | 'hiveId'>) => {
+  // Добавление новой инспекции
+  createInspection = async (hiveId: number, inspectionData: Partial<Inspection>) => {
     try {
       this.setLoading(true);
       this.setError(null);
-
-      console.log(`Adding inspection for hive ${hiveId}:`, inspection);
-      const response = await hivesApi.post<Inspection>(`/${hiveId}/inspections`, inspection);
-
+      const response = await hiveApi.post<Inspection>(
+        `/hives/${hiveId}/inspections`,
+        inspectionData
+      );
       runInAction(() => {
         this.inspections.push(response.data);
-        console.log('Inspection added successfully:', response.data);
       });
-    } catch (error: any) {
-      console.error('Error adding inspection:', error);
-      runInAction(() => {
-        this.setError(getErrorMessage(error, 'Failed to add inspection'));
-      });
-    } finally {
-      runInAction(() => {
-        this.setLoading(false);
-      });
-    }
-  };
-
-  @action
-  setSelectedHive = (hive: Hive | null) => {
-    this.selectedHive = hive;
-    if (hive) {
-      this.fetchHiveInspections(hive.id);
-    }
-  };
-
-  createHive = async (hiveData: { name: string; location: string; queen_year: number; frames_count: number }) => {
-    try {
-      this.setLoading(true);
-      this.setError(null);
-
-      console.log('Creating new hive:', hiveData);
-      const response = await hivesApi.post<Hive>('/', hiveData);
-
-      runInAction(() => {
-        this.hives.push(response.data);
-        console.log('Hive created successfully:', response.data);
-      });
-
       return response.data;
-    } catch (error: any) {
-      console.error('Error creating hive:', error);
-      runInAction(() => {
-        this.setError(getErrorMessage(error, 'Failed to create hive'));
-      });
-      throw error;
+    } catch (error) {
+      console.error('Failed to create inspection:', error);
+      this.setError(error);
+      return null;
     } finally {
-      runInAction(() => {
-        this.setLoading(false);
-      });
-    }
-  };
-
-  deleteHive = async (hiveId: number) => {
-    try {
-      this.setLoading(true);
-      this.setError(null);
-
-      console.log(`Deleting hive ${hiveId}...`);
-      await hivesApi.delete(`/${hiveId}`);
-
-      runInAction(() => {
-        this.hives = this.hives.filter(hive => hive.id !== hiveId);
-        if (this.selectedHive?.id === hiveId) {
-          this.selectedHive = null;
-        }
-        console.log('Hive deleted successfully');
-      });
-    } catch (error: any) {
-      console.error('Error deleting hive:', error);
-      runInAction(() => {
-        this.setError(getErrorMessage(error, 'Failed to delete hive'));
-      });
-      throw error;
-    } finally {
-      runInAction(() => {
-        this.setLoading(false);
-      });
+      this.setLoading(false);
     }
   };
 }

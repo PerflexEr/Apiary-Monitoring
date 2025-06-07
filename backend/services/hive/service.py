@@ -69,6 +69,15 @@ class HiveService(BaseService[models.Hive]):
 
         return hive
 
+    async def delete(self, db: AsyncSession, hive_id: int) -> bool:
+        """Delete a hive by ID."""
+        hive = await self.get(db, hive_id)
+        if not hive:
+            return False
+        await db.delete(hive)
+        await db.commit()
+        return True
+
 
 class InspectionService(BaseService[models.Inspection]):
     def __init__(self):

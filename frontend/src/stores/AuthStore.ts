@@ -1,6 +1,6 @@
 // frontend/src/stores/AuthStore.ts
 import { makeAutoObservable, action, runInAction } from 'mobx';
-import { authApi } from '../api/requests';
+import { authApi, setAuthToken, createAuthFormData } from '../api/requests';
 import type { RootStore } from './RootStore';
 
 interface User {
@@ -23,10 +23,10 @@ export class AuthStore {
   loading = false;
   error: string | null = null;
   user: User | null = null;
+  initialized = false;
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  constructor(private rootStore: RootStore) {
-    makeAutoObservable(this, {}, { autoBind: true });
+  constructor(rootStore: RootStore) {
+    makeAutoObservable(this);
   }
 
   @action
@@ -45,18 +45,21 @@ export class AuthStore {
     this.isAuthenticated = !!user;
   }
 
+  @action
+  setInitialized(value: boolean) {
+    this.initialized = value;
+  }
+
   login = async (email: string, password: string) => {
     try {
       console.log('Starting login process...');
       this.setLoading(true);
       this.setError(null);
 
-      const formData = new FormData();
-      formData.append('username', email);
-      formData.append('password', password);
-
+      const formData = createAuthFormData(email, password);
       console.log('Sending login request to /token...');
-      const response = await authApi.post<{ access_token: string, token_type: string, user?: User }>('/token', formData, {
+      
+      const response = await authApi.post<{ access_token: string, token_type: string }>('/token', formData, {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
         }
@@ -70,23 +73,12 @@ export class AuthStore {
       }
 
       localStorage.setItem('token', access_token);
-      
-      // Устанавливаем токен во все API инстансы
-      const { setAuthToken } = await import('../api/requests');
       setAuthToken(access_token);
 
-      console.log('Token saved, fetching user info...');
-      
-      // Небольшая задержка для обеспечения, что токен сохранился
-      await new Promise(resolve => setTimeout(resolve, 100));
-
       const userSuccess = await this.checkAuth();
-
       if (userSuccess) {
-        console.log('User info fetched successfully:', this.user);
         return { success: true, isAuthenticated: this.isAuthenticated, user: this.user };
       } else {
-        console.error('Failed to fetch user info after login');
         this.setError('Failed to fetch user information');
         localStorage.removeItem('token');
         return { success: false, isAuthenticated: false, user: null };
@@ -118,11 +110,11 @@ export class AuthStore {
     }
 
     try {
-      console.log('Checking authentication with /users/me/...');
+      console.log('Checking authentication with /users/me...');
       this.setLoading(true);
       this.setError(null);
       
-      const response = await authApi.get<User>('/users/me/');
+      const response = await authApi.get<User>('/users/me');
       console.log('User info response:', response.data);
 
       if (!response.data) {
@@ -137,11 +129,6 @@ export class AuthStore {
       return true;
     } catch (error: any) {
       console.error('Auth check failed:', error);
-      console.error('Error details:', {
-        status: error.status,
-        message: error.message,
-        data: error.data
-      });
       
       runInAction(() => {
         this.setUser(null);
@@ -158,44 +145,42 @@ export class AuthStore {
   };
 
   @action
-  logout = async () => {
+  logout = () => {
     console.log('Logging out...');
     localStorage.removeItem('token');
-    
-    // Удаляем токен из всех API инстансов
-    const { setAuthToken } = await import('../api/requests');
     setAuthToken(null);
     
     this.setUser(null);
     this.setError(null);
 
-    // Принудительное перенаправление на страницу входа
     if (!window.location.pathname.includes('/login')) {
       window.location.href = '/login';
     }
   };
 
-  changePassword = async (currentPassword: string, newPassword: string) => {
+  initialize = async () => {
+    if (this.initialized) {
+      return;
+    }
+    
+    console.log('Initializing auth store...');
+    this.setLoading(true);
+    
     try {
-      this.setLoading(true);
-      this.setError(null);
-
-      await authApi.post('/change-password', {
-        current_password: currentPassword,
-        new_password: newPassword,
-      });
-
-      return { success: true, message: 'Password changed successfully' };
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.detail || error.message || 'Failed to change password';
-      this.setError(errorMessage);
-      throw new Error(errorMessage);
+      const token = localStorage.getItem('token');
+      if (token) {
+        setAuthToken(token);
+        await this.checkAuth();
+      }
+    } catch (error) {
+      console.error('Auth initialization failed:', error);
+      this.setError('Failed to initialize authentication');
     } finally {
       this.setLoading(false);
+      this.setInitialized(true);
     }
   };
 
-  // Вспомогательные методы
   get isAdmin(): boolean {
     return this.user?.is_superuser || false;
   }
@@ -207,39 +192,4 @@ export class AuthStore {
   get userDisplayName(): string {
     return this.user?.username || this.user?.email || 'User';
   }
-
-  // Метод для принудительного обновления токена в заголовках axios
-  refreshAuthHeaders = () => {
-    const token = localStorage.getItem('token');
-    // Используем новую функцию для установки токена во все API инстансы
-    import('../api/requests').then(({ setAuthToken }) => {
-      setAuthToken(token);
-    });
-  };
-
-  // Инициализация при загрузке приложения
-  initialize = async () => {
-    console.log('Initializing auth store...');
-    this.refreshAuthHeaders();
-    
-    // Проверяем доступность сервисов
-    try {
-      const { checkServiceHealth } = await import('../api/requests');
-      const healthResults = await checkServiceHealth();
-      console.log('🏥 Service health check:', healthResults);
-      
-      // Проверяем, есть ли недоступные сервисы
-      const unhealthyServices = healthResults.filter(result => result.status !== 'healthy');
-      if (unhealthyServices.length > 0) {
-        console.warn('⚠️ Some services are not healthy:', unhealthyServices);
-      }
-    } catch (error) {
-      console.error('❌ Health check failed:', error);
-    }
-    
-    const token = localStorage.getItem('token');
-    if (token && !this.user && !this.loading) {
-      await this.checkAuth();
-    }
-  };
 }

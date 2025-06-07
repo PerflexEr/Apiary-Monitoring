@@ -12,6 +12,13 @@ import HiveDetailsPage from './pages/HiveDetailsPage';
 import NotificationsPage from './pages/NotificationsPage';
 import SettingsPage from './pages/SettingsPage';
 import { CircularProgress, Box } from '@mui/material';
+import iconUrl from './assets/9421017.png';
+
+// Обновляем favicon программно
+const favicon = document.querySelector('link[rel="icon"]');
+if (favicon) {
+  favicon.setAttribute('href', iconUrl);
+}
 
 // Компонент для защищенных маршрутов
 const ProtectedRoute: React.FC = observer(() => {
@@ -20,10 +27,11 @@ const ProtectedRoute: React.FC = observer(() => {
   console.log('ProtectedRoute check:', {
     isAuthenticated: authStore.isAuthenticated,
     user: authStore.user,
-    loading: authStore.loading
+    loading: authStore.loading,
+    initialized: authStore.initialized
   });
 
-  if (authStore.loading) {
+  if (!authStore.initialized || authStore.loading) {
     return (
       <Box
         sx={{
@@ -36,7 +44,7 @@ const ProtectedRoute: React.FC = observer(() => {
       >
         <CircularProgress />
         <Box sx={{ mt: 2, textAlign: 'center' }}>
-          Checking authentication...
+          Проверка аутентификации...
         </Box>
       </Box>
     );
@@ -57,10 +65,11 @@ const PublicRoute: React.FC = observer(() => {
   console.log('PublicRoute check:', {
     isAuthenticated: authStore.isAuthenticated,
     user: authStore.user,
-    loading: authStore.loading
+    loading: authStore.loading,
+    initialized: authStore.initialized
   });
 
-  if (authStore.loading) {
+  if (!authStore.initialized) {
     return (
       <Box
         sx={{
@@ -73,7 +82,7 @@ const PublicRoute: React.FC = observer(() => {
       >
         <CircularProgress />
         <Box sx={{ mt: 2, textAlign: 'center' }}>
-          Loading...
+          Инициализация...
         </Box>
       </Box>
     );
@@ -86,32 +95,6 @@ const PublicRoute: React.FC = observer(() => {
 
   return <LoginPage />;
 });
-
-// Компонент для обработки ошибок
-const ErrorBoundary: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  return (
-    <React.Suspense
-      fallback={
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            height: '100vh',
-            flexDirection: 'column'
-          }}
-        >
-          <CircularProgress />
-          <Box sx={{ mt: 2, textAlign: 'center' }}>
-            Loading application...
-          </Box>
-        </Box>
-      }
-    >
-      {children}
-    </React.Suspense>
-  );
-};
 
 const App: React.FC = observer(() => {
   const { authStore } = useStore();
@@ -128,7 +111,9 @@ const App: React.FC = observer(() => {
       }
     };
 
-    initializeAuth();
+    if (!authStore.initialized) {
+      initializeAuth();
+    }
   }, [authStore]);
 
   // Обработка изменений в localStorage (например, при логауте в другой вкладке)
@@ -152,9 +137,9 @@ const App: React.FC = observer(() => {
       element: <PublicRoute />,
       errorElement: (
         <Box sx={{ p: 3, textAlign: 'center' }}>
-          <h2>Something went wrong with the login page</h2>
+          <h2>Что-то пошло не так при загрузке страницы входа</h2>
           <button onClick={() => window.location.href = '/login'}>
-            Try again
+            Попробовать снова
           </button>
         </Box>
       )
@@ -164,9 +149,9 @@ const App: React.FC = observer(() => {
       element: <ProtectedRoute />,
       errorElement: (
         <Box sx={{ p: 3, textAlign: 'center' }}>
-          <h2>Something went wrong</h2>
+          <h2>Произошла ошибка</h2>
           <button onClick={() => window.location.href = '/'}>
-            Go to dashboard
+            Вернуться на главную
           </button>
         </Box>
       ),
@@ -195,31 +180,14 @@ const App: React.FC = observer(() => {
     },
     {
       path: '*',
-      element: (
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            height: '100vh',
-            flexDirection: 'column'
-          }}
-        >
-          <h1>404 - Page Not Found</h1>
-          <button onClick={() => window.location.href = '/'}>
-            Go to dashboard
-          </button>
-        </Box>
-      )
+      element: <Navigate to="/" replace />
     }
   ]);
 
   return (
-    <ErrorBoundary>
-      <ThemeProvider theme={theme}>
-        <RouterProvider router={router} />
-      </ThemeProvider>
-    </ErrorBoundary>
+    <ThemeProvider theme={theme}>
+      <RouterProvider router={router} />
+    </ThemeProvider>
   );
 });
 

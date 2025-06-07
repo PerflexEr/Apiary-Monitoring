@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -9,6 +9,7 @@ import {
   Button,
   Paper,
   Alert,
+  CircularProgress,
 } from '@mui/material';
 import { rootStore } from '../stores/RootStore';
 
@@ -18,42 +19,29 @@ const LoginPage: React.FC = observer(() => {
   const navigate = useNavigate();
   const { authStore } = rootStore;
 
-  // Перенаправление при изменении состояния аутентификации
-  useEffect(() => {
-    if (authStore.isAuthenticated && authStore.user) {
-      console.log('User authenticated, navigating to dashboard...');
-      navigate('/', { replace: true });
-    }
-  }, [authStore.isAuthenticated, authStore.user, navigate]);
+  // Если пользователь уже аутентифицирован, показываем загрузку
+  if (authStore.isAuthenticated && authStore.user) {
+    navigate('/', { replace: true });
+    return (
+      <Container component="main" maxWidth="xs">
+        <Box sx={{ marginTop: 8, display: 'flex', justifyContent: 'center' }}>
+          <CircularProgress />
+        </Box>
+      </Container>
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Submitting login form...');
 
-    const success = await authStore.login(email, password);
-    console.log('Login result:', {
-      success,
-      isAuthenticated: authStore.isAuthenticated,
-      user: authStore.user
-    });
+    const { success } = await authStore.login(email, password);
+    console.log('Login result:', success);
 
-    // Дополнительная проверка и принудительная навигация
-    if (success && authStore.isAuthenticated && authStore.user) {
-      console.log('Force navigation after successful login');
+    if (success) {
       navigate('/', { replace: true });
     }
   };
-
-  // Если пользователь уже аутентифицирован, показываем загрузку
-  if (authStore.isAuthenticated && authStore.user) {
-    return (
-      <Container component="main" maxWidth="xs">
-        <Box sx={{ marginTop: 8, display: 'flex', justifyContent: 'center' }}>
-          <Typography>Redirecting...</Typography>
-        </Box>
-      </Container>
-    );
-  }
 
   return (
     <Container component="main" maxWidth="xs">
@@ -117,7 +105,7 @@ const LoginPage: React.FC = observer(() => {
               sx={{ mt: 3, mb: 2 }}
               disabled={authStore.loading}
             >
-              {authStore.loading ? 'Signing in...' : 'Sign In'}
+              {authStore.loading ? <CircularProgress size={24} /> : 'Sign In'}
             </Button>
           </Box>
         </Paper>

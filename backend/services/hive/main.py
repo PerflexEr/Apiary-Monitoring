@@ -13,6 +13,9 @@ from .config import SECRET_KEY, ALGORITHM
 
 app = FastAPI(title="Hive Service", version="1.0.0")
 
+# Отключаем автоматическое перенаправление слешей
+app.router.redirect_slashes = False
+
 # Настраиваем CORS
 setup_cors(app)
 
@@ -20,7 +23,7 @@ hive_service = HiveService()
 inspection_service = InspectionService()
 user_service = UserService()
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="http://localhost:8000/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="http://localhost:8001/token")
 
 
 async def get_current_user(
@@ -60,6 +63,7 @@ async def create_hive(
     return schemas.HiveResponse.model_validate(db_hive)
 
 
+@app.get("/hives", response_model=List[schemas.HiveResponse])
 @app.get("/hives/", response_model=List[schemas.HiveResponse])
 async def read_hives(
     skip: int = 0,
@@ -67,9 +71,11 @@ async def read_hives(
     db: AsyncSession = Depends(get_db),
     current_user: auth_schemas.User = Depends(get_current_active_user)
 ) -> List[schemas.HiveResponse]:
+    print(f"Handling GET /hives request for user {current_user.id}")
     hives = await hive_service.get_hives_by_user(
         db, user_id=current_user.id, skip=skip, limit=limit
     )
+    print(f"Found {len(hives)} hives for user {current_user.id}")
     return [schemas.HiveResponse.model_validate(hive) for hive in hives]
 
 
@@ -138,3 +144,19 @@ async def read_inspections(
         db, hive_id=hive_id, user_id=current_user.id, skip=skip, limit=limit
     )
     return [schemas.InspectionResponse.model_validate(inspection) for inspection in inspections]
+
+
+@app.delete("/hives/{hive_id}", response_model=dict)
+async def delete_hive(
+    hive_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: auth_schemas.User = Depends(get_current_active_user)
+) -> dict:
+    db_hive = await hive_service.get(db, hive_id)
+    if db_hive is None:
+        raise HTTPException(status_code=404, detail="Hive not found")
+    if db_hive.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    
+    await hive_service.delete(db, hive_id)
+    return {"status": "success", "message": "Hive deleted successfully"}
