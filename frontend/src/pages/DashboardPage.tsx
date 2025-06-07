@@ -67,8 +67,13 @@ const DashboardPage: React.FC = observer(() => {
 
   const activeAlerts = monitoringStore.getUnresolvedAlerts();
   const totalHives = hiveStore.hives.length;
-  const healthyHives = hiveStore.hives.filter(h => h.status === 'good').length;
-  const criticalHives = hiveStore.hives.filter(h => h.status === 'critical').length;
+  // Вспомогательная функция для поддержки старых и новых значений статуса
+  const isHealthy = (status: string) => status === 'healthy' || status === 'good';
+  const isWarning = (status: string) => status === 'warning';
+  const isCritical = (status: string) => status === 'critical';
+
+  const healthyHives = hiveStore.hives.filter(h => isHealthy(h.status)).length;
+  const criticalHives = hiveStore.hives.filter(h => isCritical(h.status)).length;
 
   return (
     <Box>
@@ -167,8 +172,8 @@ const DashboardPage: React.FC = observer(() => {
                   borderRadius: 1,
                   bgcolor: 'background.default',
                   borderLeft: 4,
-                  borderColor: hive.status === 'good' ? 'success.main' :
-                    hive.status === 'warning' ? 'warning.main' : 'error.main',
+                  borderColor: isHealthy(hive.status) ? 'success.main' :
+                    isWarning(hive.status) ? 'warning.main' : 'error.main',
                 }}
               >
                 <Typography variant="subtitle1" fontWeight="bold">
@@ -178,7 +183,7 @@ const DashboardPage: React.FC = observer(() => {
                   Location: {hive.location}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Health: {hive.status === 'good' ? 'Healthy' : hive.status === 'warning' ? 'Warning' : hive.status === 'critical' ? 'Critical' : hive.status}
+                  Health: {isHealthy(hive.status) ? 'Healthy' : isWarning(hive.status) ? 'Warning' : isCritical(hive.status) ? 'Critical' : '—'}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   Created: {new Date(hive.created_at).toLocaleDateString()}
@@ -279,7 +284,7 @@ const DashboardPage: React.FC = observer(() => {
               <Grid item xs={6} md={3}>
                 <Box textAlign="center">
                   <Typography variant="h4" color="success.main">
-                    {hiveStore.hives.filter(h => h.status === 'good').length}
+                    {hiveStore.hives.filter(h => isHealthy(h.status)).length}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     Healthy Hives
@@ -289,7 +294,7 @@ const DashboardPage: React.FC = observer(() => {
               <Grid item xs={6} md={3}>
                 <Box textAlign="center">
                   <Typography variant="h4" color="warning.main">
-                    {hiveStore.hives.filter(h => h.status === 'warning').length}
+                    {hiveStore.hives.filter(h => isWarning(h.status)).length}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     Warning Hives
@@ -299,7 +304,7 @@ const DashboardPage: React.FC = observer(() => {
               <Grid item xs={6} md={3}>
                 <Box textAlign="center">
                   <Typography variant="h4" color="error.main">
-                    {hiveStore.hives.filter(h => h.status === 'critical').length}
+                    {hiveStore.hives.filter(h => isCritical(h.status)).length}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     Critical Hives

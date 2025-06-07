@@ -17,7 +17,7 @@ class Hive(Base, TimestampMixin):
     name = Column(String, index=True)
     location = Column(String)
     description = Column(String, nullable=True)
-    status = Column(String, default=HiveStatus.ACTIVE.value)
+    status = Column(String, default="healthy")  # теперь healthy по умолчанию
     queen_year = Column(Integer)
     frames_count = Column(Integer)
     user_id = Column(Integer, ForeignKey("users.id"))
@@ -38,7 +38,7 @@ class Inspection(Base, TimestampMixin):
     humidity = Column(Float)
     weight = Column(Float)
     notes = Column(String)
-    health = Column(String, nullable=True)  # new field for health status
+    status = Column(String, nullable=True)  # теперь только status
     user_id = Column(Integer, ForeignKey("users.id"))
 
     # Relationships

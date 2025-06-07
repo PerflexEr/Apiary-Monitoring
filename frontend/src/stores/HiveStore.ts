@@ -25,7 +25,7 @@ export interface InspectionCreate {
   humidity: number;
   weight: number;
   notes: string;
-  health: 'good' | 'warning' | 'critical'; // добавлено поле
+  status: 'healthy' | 'warning' | 'critical';
 }
 
 export class HiveStore {

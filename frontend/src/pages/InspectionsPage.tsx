@@ -26,7 +26,7 @@ const InspectionsPage: React.FC = () => {
     humidity: 0,
     weight: 0,
     notes: '',
-    health: 'good',
+    status: 'healthy',
   });
 
   useEffect(() => {
@@ -61,7 +61,7 @@ const InspectionsPage: React.FC = () => {
         humidity: 0,
         weight: 0,
         notes: '',
-        health: 'good',
+        status: 'healthy',
       });
     } catch (error) {
       console.error('Failed to create inspection:', error);
@@ -150,17 +150,17 @@ const InspectionsPage: React.FC = () => {
                 </Grid>
                 <Grid item xs={12} md={4}>
                   <FormControl fullWidth>
-                    <InputLabel id="health-select-label">Health</InputLabel>
+                    <InputLabel id="status-select-label">Status</InputLabel>
                     <Select
-                      labelId="health-select-label"
-                      id="health-select"
-                      name="health"
-                      value={inspectionData.health}
-                      label="Health"
-                      onChange={(e) => setInspectionData(prev => ({ ...prev, health: e.target.value as 'good' | 'warning' | 'critical' }))}
+                      labelId="status-select-label"
+                      id="status-select"
+                      name="status"
+                      value={inspectionData.status}
+                      label="Status"
+                      onChange={(e) => setInspectionData(prev => ({ ...prev, status: e.target.value as 'healthy' | 'warning' | 'critical' }))}
                       required
                     >
-                      <MenuItem value="good">Healthy</MenuItem>
+                      <MenuItem value="healthy">Healthy</MenuItem>
                       <MenuItem value="warning">Warning</MenuItem>
                       <MenuItem value="critical">Critical</MenuItem>
                     </Select>
@@ -211,7 +211,7 @@ const InspectionsPage: React.FC = () => {
                       </Typography>
                     )}
                     <Typography>
-                      <strong>Состояние:</strong> {'health' in inspection ? (inspection as any).health === 'good' ? 'Healthy' : (inspection as any).health === 'warning' ? 'Warning' : (inspection as any).health === 'critical' ? 'Critical' : '—' : '—'}
+                      <strong>Status:</strong> {inspection.status === 'healthy' ? 'Healthy' : inspection.status === 'warning' ? 'Warning' : inspection.status === 'critical' ? 'Critical' : '—'}
                     </Typography>
                   </CardContent>
                 </Card>

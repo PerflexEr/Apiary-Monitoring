@@ -9,7 +9,7 @@ class InspectionBase(BaseSchema):
     humidity: float
     weight: float
     notes: Optional[str] = None
-    health: Optional[str] = None  # new field for health status
+    status: Optional[str] = None  # теперь только status
 
 
 class InspectionCreate(InspectionBase):
@@ -21,7 +21,7 @@ class InspectionUpdate(BaseSchema):
     humidity: Optional[float] = None
     weight: Optional[float] = None
     notes: Optional[str] = None
-    health: Optional[str] = None  # new field for health status
+    status: Optional[str] = None  # теперь только status
 
 
 class InspectionResponse(InspectionBase):
@@ -35,7 +35,7 @@ class InspectionResponse(InspectionBase):
 class HiveBase(BaseSchema):
     name: str
     location: str
-    status: str = "active"  # Простая строка вместо enum
+    status: str = "healthy"  # healthy по умолчанию
     queen_year: int
     frames_count: int
     description: Optional[str] = None

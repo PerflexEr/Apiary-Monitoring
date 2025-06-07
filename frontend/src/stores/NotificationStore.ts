@@ -2,30 +2,7 @@
 import { makeAutoObservable, action, runInAction } from 'mobx';
 import type { RootStore } from './RootStore';
 import { notificationApi } from '../api/requests';
-
-interface NotificationPreference {
-  id?: number;
-  type: 'email' | 'push' | 'sms';
-  enabled: boolean;
-  alertTypes: string[];
-  minSeverity: 'low' | 'medium' | 'high';
-}
-
-interface Notification {
-  id: number;
-  type: string;
-  message: string;
-  severity: string;
-  timestamp: string;
-  isRead: boolean;
-}
-
-interface NotificationTemplate {
-  id?: number;
-  name: string;
-  content: string;
-  type: string;
-}
+import type { Notification, NotificationTemplate, NotificationPreference } from '../types/stores';
 
 export class NotificationStore {
   preferences: NotificationPreference | null = null;
@@ -57,9 +34,15 @@ export class NotificationStore {
       runInAction(() => {
         this.preferences = response.data;
       });
-    } catch (error) {
-      console.error('Failed to fetch notification preferences:', error);
-      this.setError('Failed to fetch notification preferences');
+    } catch (error: any) {
+      if (error?.response?.status === 404) {
+        runInAction(() => {
+          this.preferences = null;
+        });
+      } else {
+        console.error('Failed to fetch notification preferences:', error);
+        this.setError('Failed to fetch notification preferences');
+      }
     } finally {
       this.setLoading(false);
     }
@@ -88,6 +71,39 @@ export class NotificationStore {
     }
   };
 
+  // Отметить уведомление как прочитанное
+  markAsRead = async (notificationId: number) => {
+    try {
+      this.setLoading(true);
+      await notificationApi.put(`/notifications/${notificationId}/read`);
+      runInAction(() => {
+        const n = this.notifications.find(n => n.id === notificationId);
+        if (n) n.isRead = true;
+      });
+    } catch (error) {
+      this.setError('Failed to mark as read');
+    } finally {
+      this.setLoading(false);
+    }
+  };
+
+  // Создать новое уведомление
+  createNotification = async (notification: Partial<Notification>) => {
+    try {
+      this.setLoading(true);
+      const response = await notificationApi.post<Notification>('/notifications/', notification);
+      runInAction(() => {
+        this.notifications.unshift(response.data);
+      });
+      return true;
+    } catch (error) {
+      this.setError('Failed to create notification');
+      return false;
+    } finally {
+      this.setLoading(false);
+    }
+  };
+
   // Получение всех уведомлений
   fetchNotifications = async () => {
     try {
@@ -95,17 +111,25 @@ export class NotificationStore {
       const response = await notificationApi.get<any[]>('/notifications/');
       const adaptedNotifications: Notification[] = response.data.map((notification: any) => ({
         id: notification.id,
-        type: notification.type,
+        template_id: notification.template_id,
+        notification_type: notification.notification_type,
+        priority: notification.priority,
+        subject: notification.subject,
+        body: notification.body,
         message: notification.message,
-        severity: notification.severity,
-        timestamp: notification.timestamp,
-        isRead: notification.is_read
+        title: notification.title,
+        timestamp: notification.timestamp || notification.created_at,
+        isRead: notification.isRead ?? notification.is_read ?? false,
+        is_sent: notification.is_sent,
+        sent_at: notification.sent_at,
+        error_message: notification.error_message,
+        created_at: notification.created_at,
+        updated_at: notification.updated_at,
       }));
       runInAction(() => {
         this.notifications = adaptedNotifications;
       });
     } catch (error) {
-      console.error('Failed to fetch notifications:', error);
       this.setError('Failed to fetch notifications');
     } finally {
       this.setLoading(false);
@@ -119,17 +143,25 @@ export class NotificationStore {
       const response = await notificationApi.get<any[]>('/notifications/pending/');
       const adaptedNotifications: Notification[] = response.data.map((notification: any) => ({
         id: notification.id,
-        type: notification.type,
+        template_id: notification.template_id,
+        notification_type: notification.notification_type,
+        priority: notification.priority,
+        subject: notification.subject,
+        body: notification.body,
         message: notification.message,
-        severity: notification.severity,
-        timestamp: notification.timestamp,
-        isRead: notification.is_read
+        title: notification.title,
+        timestamp: notification.timestamp || notification.created_at,
+        isRead: notification.isRead ?? notification.is_read ?? false,
+        is_sent: notification.is_sent,
+        sent_at: notification.sent_at,
+        error_message: notification.error_message,
+        created_at: notification.created_at,
+        updated_at: notification.updated_at,
       }));
       runInAction(() => {
         this.pendingNotifications = adaptedNotifications;
       });
     } catch (error) {
-      console.error('Failed to fetch pending notifications:', error);
       this.setError('Failed to fetch pending notifications');
     } finally {
       this.setLoading(false);
@@ -140,12 +172,20 @@ export class NotificationStore {
   fetchTemplates = async () => {
     try {
       this.setLoading(true);
-      const response = await notificationApi.get<NotificationTemplate[]>('/templates/');
+      const response = await notificationApi.get<any[]>('/templates/');
+      const adaptedTemplates: NotificationTemplate[] = response.data.map((tpl: any) => ({
+        id: tpl.id,
+        name: tpl.name,
+        subject: tpl.subject,
+        body: tpl.body,
+        notification_type: tpl.notification_type,
+        created_at: tpl.created_at,
+        updated_at: tpl.updated_at,
+      }));
       runInAction(() => {
-        this.templates = response.data;
+        this.templates = adaptedTemplates;
       });
     } catch (error) {
-      console.error('Failed to fetch notification templates:', error);
       this.setError('Failed to fetch notification templates');
     } finally {
       this.setLoading(false);
@@ -153,7 +193,7 @@ export class NotificationStore {
   };
 
   // Создание нового шаблона
-  createTemplate = async (template: NotificationTemplate) => {
+  createTemplate = async (template: Partial<NotificationTemplate>) => {
     try {
       this.setLoading(true);
       const response = await notificationApi.post<NotificationTemplate>('/templates/', template);
@@ -162,8 +202,24 @@ export class NotificationStore {
       });
       return true;
     } catch (error) {
-      console.error('Failed to create notification template:', error);
       this.setError('Failed to create notification template');
+      return false;
+    } finally {
+      this.setLoading(false);
+    }
+  };
+
+  // Создать настройки уведомлений (POST /settings/)
+  createPreferences = async (prefs: NotificationPreference) => {
+    try {
+      this.setLoading(true);
+      const response = await notificationApi.post<any>('/settings/', prefs);
+      runInAction(() => {
+        this.preferences = response.data;
+      });
+      return true;
+    } catch (error) {
+      this.setError('Failed to create notification preferences');
       return false;
     } finally {
       this.setLoading(false);

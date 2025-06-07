@@ -25,8 +25,16 @@ export interface Inspection {
   id: number;
   hiveId: number;
   notes: string;
-  health: 'good' | 'warning' | 'critical';
+  status: 'healthy' | 'warning' | 'critical';
   created_at: string;
+}
+
+export interface InspectionCreate {
+  temperature: number;
+  humidity: number;
+  weight: number;
+  notes: string;
+  status: 'healthy' | 'warning' | 'critical';
 }
 
 export interface SensorData {
@@ -88,10 +96,10 @@ export interface SensorStats {
 
 export interface NotificationPreference {
   id?: number;
-  type: 'email' | 'push' | 'sms';
-  enabled: boolean;
-  alertTypes: string[];
-  minSeverity: 'low' | 'medium' | 'high';
+  type?: 'email' | 'push' | 'sms';
+  enabled?: boolean;
+  alertTypes?: string[];
+  minSeverity?: 'low' | 'medium' | 'high';
   email_enabled?: boolean;
   sms_enabled?: boolean;
   push_enabled?: boolean;
@@ -105,17 +113,15 @@ export interface NotificationPreference {
 
 export interface Notification {
   id: number;
-  title: string;
-  message: string;
+  template_id?: number;
+  notification_type: 'email' | 'sms' | 'push';
+  priority: 'low' | 'medium' | 'high';
+  subject: string;
+  body: string;
+  message?: string;
+  title?: string;
   timestamp: string;
   isRead: boolean;
-  // API поля
-  template_id?: number;
-  notification_type?: 'email' | 'sms' | 'push';
-  priority?: 'low' | 'medium' | 'high';
-  subject?: string;
-  body?: string;
-  user_id?: number;
   is_sent?: boolean;
   sent_at?: string;
   error_message?: string;
@@ -129,19 +135,6 @@ export interface NotificationTemplate {
   subject: string;
   body: string;
   notification_type: 'email' | 'sms' | 'push';
-  created_at: string;
-  updated_at: string | null;
-}
-
-export interface NotificationSettings {
-  id: number;
-  email_enabled: boolean;
-  sms_enabled: boolean;
-  push_enabled: boolean;
-  email_address: string | null;
-  phone_number: string | null;
-  min_priority: 'low' | 'medium' | 'high';
-  user_id: number;
   created_at: string;
   updated_at: string | null;
 }

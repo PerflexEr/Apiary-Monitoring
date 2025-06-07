@@ -59,7 +59,7 @@ const HiveDetailsPage: React.FC = observer(() => {
   const [openDialog, setOpenDialog] = useState(false);
   const [inspectionData, setInspectionData] = useState({
     notes: '',
-    health: 'good',
+    status: 'healthy',
   });
 
   useEffect(() => {
@@ -82,7 +82,7 @@ const HiveDetailsPage: React.FC = observer(() => {
   };
 
   const handleOpenDialog = () => {
-    setInspectionData({ notes: '', health: 'good' });
+    setInspectionData({ notes: '', status: 'healthy' });
     setOpenDialog(true);
   };
 
@@ -99,7 +99,7 @@ const HiveDetailsPage: React.FC = observer(() => {
           humidity: 0,
           weight: 0,
           notes: inspectionData.notes,
-          health: inspectionData.health as 'good' | 'warning' | 'critical',
+          status: inspectionData.status as 'healthy' | 'warning' | 'critical',
         });
         handleCloseDialog();
       } catch (error) {
@@ -222,8 +222,8 @@ const HiveDetailsPage: React.FC = observer(() => {
                 <TimelineSeparator>
                   <TimelineDot
                     color={
-                      inspection.health === 'good' ? 'success' :
-                        inspection.health === 'warning' ? 'warning' : 'error'
+                      inspection.status === 'healthy' ? 'success' :
+                      inspection.status === 'warning' ? 'warning' : 'error'
                     }
                   />
                   <TimelineConnector />
@@ -233,7 +233,7 @@ const HiveDetailsPage: React.FC = observer(() => {
                     {new Date(inspection.created_at).toLocaleDateString()}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Health: {inspection.health === 'good' ? 'Healthy' : inspection.health === 'warning' ? 'Warning' : inspection.health === 'critical' ? 'Critical' : '—'}
+                    Status: {inspection.status === 'healthy' ? 'Healthy' : inspection.status === 'warning' ? 'Warning' : inspection.status === 'critical' ? 'Critical' : '—'}
                   </Typography>
                   <Typography>{inspection.notes}</Typography>
                 </TimelineContent>
@@ -334,13 +334,13 @@ const HiveDetailsPage: React.FC = observer(() => {
             <TextField
               select
               margin="dense"
-              label="Health Status"
+              label="Status"
               fullWidth
               required
-              value={inspectionData.health}
-              onChange={(e) => setInspectionData({ ...inspectionData, health: e.target.value })}
+              value={inspectionData.status}
+              onChange={(e) => setInspectionData({ ...inspectionData, status: e.target.value })}
             >
-              <MenuItem value="good">Good</MenuItem>
+              <MenuItem value="healthy">Healthy</MenuItem>
               <MenuItem value="warning">Warning</MenuItem>
               <MenuItem value="critical">Critical</MenuItem>
             </TextField>
