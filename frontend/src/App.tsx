@@ -1,8 +1,7 @@
-import React from 'react';
-import { createBrowserRouter, RouterProvider, Navigate, Outlet } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import { observer } from 'mobx-react-lite';
-import { useEffect } from 'react';
 import { useStore } from './hooks/useStore';
 import { theme } from './theme';
 import Layout from './components/Layout';
@@ -31,10 +30,14 @@ const ProtectedRoute: React.FC = observer(() => {
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          height: '100vh'
+          height: '100vh',
+          flexDirection: 'column'
         }}
       >
         <CircularProgress />
+        <Box sx={{ mt: 2, textAlign: 'center' }}>
+          Checking authentication...
+        </Box>
       </Box>
     );
   }
@@ -44,11 +47,7 @@ const ProtectedRoute: React.FC = observer(() => {
     return <Navigate to="/login" replace />;
   }
 
-  return (
-    <>
-      <Layout />
-    </>
-  );
+  return <Layout />;
 });
 
 // Компонент для публичных маршрутов (логин)
@@ -68,10 +67,14 @@ const PublicRoute: React.FC = observer(() => {
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          height: '100vh'
+          height: '100vh',
+          flexDirection: 'column'
         }}
       >
         <CircularProgress />
+        <Box sx={{ mt: 2, textAlign: 'center' }}>
+          Loading...
+        </Box>
       </Box>
     );
   }
@@ -84,25 +87,89 @@ const PublicRoute: React.FC = observer(() => {
   return <LoginPage />;
 });
 
+// Компонент для обработки ошибок
+const ErrorBoundary: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  return (
+    <React.Suspense
+      fallback={
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100vh',
+            flexDirection: 'column'
+          }}
+        >
+          <CircularProgress />
+          <Box sx={{ mt: 2, textAlign: 'center' }}>
+            Loading application...
+          </Box>
+        </Box>
+      }
+    >
+      {children}
+    </React.Suspense>
+  );
+};
+
 const App: React.FC = observer(() => {
   const { authStore } = useStore();
 
   useEffect(() => {
-    console.log('App mounted, checking auth...');
-    const token = localStorage.getItem('token');
-    if (token && !authStore.user && !authStore.loading) {
-      authStore.checkAuth();
-    }
+    console.log('App mounted, initializing auth...');
+    
+    const initializeAuth = async () => {
+      try {
+        await authStore.initialize();
+        console.log('Auth initialization completed');
+      } catch (error) {
+        console.error('Auth initialization failed:', error);
+      }
+    };
+
+    initializeAuth();
+  }, [authStore]);
+
+  // Обработка изменений в localStorage (например, при логауте в другой вкладке)
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'token' && e.newValue === null) {
+        console.log('Token removed from localStorage, logging out...');
+        authStore.logout();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, [authStore]);
 
   const router = createBrowserRouter([
     {
       path: '/login',
-      element: <PublicRoute />
+      element: <PublicRoute />,
+      errorElement: (
+        <Box sx={{ p: 3, textAlign: 'center' }}>
+          <h2>Something went wrong with the login page</h2>
+          <button onClick={() => window.location.href = '/login'}>
+            Try again
+          </button>
+        </Box>
+      )
     },
     {
       path: '/',
       element: <ProtectedRoute />,
+      errorElement: (
+        <Box sx={{ p: 3, textAlign: 'center' }}>
+          <h2>Something went wrong</h2>
+          <button onClick={() => window.location.href = '/'}>
+            Go to dashboard
+          </button>
+        </Box>
+      ),
       children: [
         {
           index: true,
@@ -125,13 +192,34 @@ const App: React.FC = observer(() => {
           element: <SettingsPage />
         }
       ]
+    },
+    {
+      path: '*',
+      element: (
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100vh',
+            flexDirection: 'column'
+          }}
+        >
+          <h1>404 - Page Not Found</h1>
+          <button onClick={() => window.location.href = '/'}>
+            Go to dashboard
+          </button>
+        </Box>
+      )
     }
   ]);
 
   return (
-    <ThemeProvider theme={theme}>
-      <RouterProvider router={router} />
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider theme={theme}>
+        <RouterProvider router={router} />
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 });
 

@@ -4,12 +4,14 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+import logging
 
 from shared.service import BaseService
 from . import models, schemas
 from .config import settings
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+logger = logging.getLogger(__name__)
 
 
 class UserService(BaseService[models.User]):
@@ -52,11 +54,40 @@ class UserService(BaseService[models.User]):
     async def authenticate_user(
         self, db: AsyncSession, username: str, password: str
     ) -> Optional[models.User]:
+        """
+        Аутентификация пользователя по username или email
+        
+        Args:
+            db: Сессия базы данных
+            username: Имя пользователя или email
+            password: Пароль
+            
+        Returns:
+            Пользователь если аутентификация успешна, иначе None
+        """
+        logger.info(f"🔐 Attempting to authenticate user: {username}")
+        
+        # Сначала пытаемся найти по username
         user = await self.get_user_by_username(db, username)
+        
+        # Если не нашли по username, пытаемся найти по email
         if not user:
+            logger.info(f"👤 User not found by username, trying email: {username}")
+            user = await self.get_user_by_email(db, username)
+        
+        if not user:
+            logger.warning(f"❌ User not found: {username}")
             return None
+            
         if not self.verify_password(password, user.hashed_password):
+            logger.warning(f"❌ Invalid password for user: {username}")
             return None
+            
+        if not user.is_active:
+            logger.warning(f"❌ User is not active: {username}")
+            return None
+            
+        logger.info(f"✅ User authenticated successfully: {user.username} (ID: {user.id})")
         return user
 
     def create_access_token(
@@ -84,12 +115,21 @@ class UserService(BaseService[models.User]):
             )
             username: str = payload.get("sub")
             if username is None:
+                logger.warning("❌ No username in token payload")
                 return None
-        except JWTError:
+        except JWTError as e:
+            logger.warning(f"❌ JWT decode error: {e}")
             return None
+            
         user = await self.get_user_by_username(db, username=username)
         if user is None:
+            logger.warning(f"❌ User not found for token: {username}")
             return None
+            
+        if not user.is_active:
+            logger.warning(f"❌ User is not active: {username}")
+            return None
+            
         return user
 
     async def update_user(
@@ -99,4 +139,4 @@ class UserService(BaseService[models.User]):
         if "password" in update_data:
             update_data["hashed_password"] = self.get_password_hash(update_data.pop("password"))
         
-        return await super().update(db, user_id, **update_data) 
+        return await super().update(db, user_id, **update_data)
