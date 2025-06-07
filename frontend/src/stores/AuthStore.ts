@@ -105,7 +105,10 @@ export class AuthStore {
     const token = localStorage.getItem('token');
     if (!token) {
       console.log('No token found');
-      this.setUser(null);
+      runInAction(() => {
+        this.setUser(null);
+        this.isAuthenticated = false;
+      });
       return false;
     }
 
@@ -113,29 +116,25 @@ export class AuthStore {
       console.log('Checking authentication with /users/me...');
       this.setLoading(true);
       this.setError(null);
-      
       const response = await authApi.get<User>('/users/me');
       console.log('User info response:', response.data);
-
       if (!response.data) {
         throw new Error('No user data received');
       }
-
       runInAction(() => {
         this.setUser(response.data);
+        this.isAuthenticated = true;
         this.setError(null);
       });
-
       return true;
     } catch (error: any) {
       console.error('Auth check failed:', error);
-      
       runInAction(() => {
         this.setUser(null);
+        this.isAuthenticated = false;
         this.setError(null);
         localStorage.removeItem('token');
       });
-      
       return false;
     } finally {
       runInAction(() => {
@@ -144,15 +143,15 @@ export class AuthStore {
     }
   };
 
+  // Явно сбрасываем isAuthenticated при логауте
   @action
   logout = () => {
     console.log('Logging out...');
     localStorage.removeItem('token');
     setAuthToken(null);
-    
     this.setUser(null);
+    this.isAuthenticated = false;
     this.setError(null);
-
     if (!window.location.pathname.includes('/login')) {
       window.location.href = '/login';
     }

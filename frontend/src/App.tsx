@@ -25,14 +25,9 @@ if (favicon) {
 // Компонент для защищенных маршрутов
 const ProtectedRoute: React.FC = observer(() => {
   const { authStore } = useStore();
+  const location = window.location.pathname;
 
-  console.log('ProtectedRoute check:', {
-    isAuthenticated: authStore.isAuthenticated,
-    user: authStore.user,
-    loading: authStore.loading,
-    initialized: authStore.initialized
-  });
-
+  // Не делать редирект, если уже на /login
   if (!authStore.initialized || authStore.loading) {
     return (
       <Box
@@ -52,8 +47,8 @@ const ProtectedRoute: React.FC = observer(() => {
     );
   }
 
-  if (!authStore.isAuthenticated || !authStore.user) {
-    console.log('Not authenticated, redirecting to login');
+  if ((!authStore.isAuthenticated || !authStore.user) && location !== '/login') {
+    // Только если не на /login
     return <Navigate to="/login" replace />;
   }
 
@@ -100,21 +95,18 @@ const PublicRoute: React.FC = observer(() => {
 
 const App: React.FC = observer(() => {
   const { authStore } = useStore();
+  // useRef для предотвращения повторной инициализации
+  const initializedRef = React.useRef(false);
 
   useEffect(() => {
-    console.log('App mounted, initializing auth...');
-    
-    const initializeAuth = async () => {
-      try {
-        await authStore.initialize();
+    if (!initializedRef.current && !authStore.initialized) {
+      initializedRef.current = true;
+      console.log('App mounted, initializing auth...');
+      authStore.initialize().then(() => {
         console.log('Auth initialization completed');
-      } catch (error) {
+      }).catch((error) => {
         console.error('Auth initialization failed:', error);
-      }
-    };
-
-    if (!authStore.initialized) {
-      initializeAuth();
+      });
     }
   }, [authStore]);
 

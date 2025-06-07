@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useNavigate } from 'react-router-dom';
 import {
   Container,
   Box,
@@ -11,25 +10,12 @@ import {
   Alert,
   CircularProgress,
 } from '@mui/material';
-import { rootStore } from '../stores/RootStore';
+import { useStore } from '../hooks/useStore';
 
 const LoginPage: React.FC = observer(() => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const navigate = useNavigate();
-  const { authStore } = rootStore;
-
-  // Если пользователь уже аутентифицирован, показываем загрузку
-  if (authStore.isAuthenticated && authStore.user) {
-    navigate('/', { replace: true });
-    return (
-      <Container component="main" maxWidth="xs">
-        <Box sx={{ marginTop: 8, display: 'flex', justifyContent: 'center' }}>
-          <CircularProgress />
-        </Box>
-      </Container>
-    );
-  }
+  const { authStore } = useStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,7 +25,7 @@ const LoginPage: React.FC = observer(() => {
     console.log('Login result:', success);
 
     if (success) {
-      navigate('/', { replace: true });
+      // Удалён navigate('/') после логина
     }
   };
 
