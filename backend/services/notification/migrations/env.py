@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 
 from shared.database import Base
+from services.auth.models import User  # Для внешних ключей на users
 from services.notification.models import *  # noqa
 
 config = context.config
@@ -36,7 +37,7 @@ def do_run_migrations(connection: Connection) -> None:
 
 async def run_async_migrations() -> None:
     configuration = config.get_section(config.config_ini_section)
-    configuration["sqlalchemy.url"] = "postgresql+asyncpg://apiary:apiary123@postgres:5432/apiary_db"
+    configuration["sqlalchemy.url"] = "postgresql+asyncpg://apiary:apiary123@127.0.0.1:5433/apiary_db"
 
     connectable = async_engine_from_config(
         configuration,
@@ -55,4 +56,4 @@ def run_migrations_online() -> None:
 if context.is_offline_mode():
     run_migrations_offline()
 else:
-    run_migrations_online() 
+    run_migrations_online()

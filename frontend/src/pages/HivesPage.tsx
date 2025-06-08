@@ -114,7 +114,7 @@ const HivesPage: React.FC = observer(() => {
 
   const getStatusColor = (status: string): 'success' | 'warning' | 'error' | 'default' => {
     switch (status) {
-      case 'good':
+      case 'healthy':
         return 'success';
       case 'warning':
         return 'warning';
@@ -180,7 +180,7 @@ const HivesPage: React.FC = observer(() => {
 
                   <Box sx={{ display: 'flex', alignItems: 'center', mt: 2, flexWrap: 'wrap', gap: 1 }}>
                     <Chip
-                      label={hive.status}
+                      label={hive.status === 'healthy' ? 'Healthy' : hive.status === 'warning' ? 'Warning' : hive.status === 'critical' ? 'Critical' : 'Unknown'}
                       color={getStatusColor(hive.status)}
                       size="small"
                     />

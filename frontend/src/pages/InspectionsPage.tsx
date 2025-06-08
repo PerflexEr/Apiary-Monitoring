@@ -21,7 +21,7 @@ import type { InspectionCreate } from '../stores/HiveStore';
 const InspectionsPage: React.FC = () => {
   const { hiveStore } = useStore();
   const [selectedHiveId, setSelectedHiveId] = useState<string>('');
-  const [inspectionData, setInspectionData] = useState<InspectionCreate>({
+  const [inspectionData, setInspectionData] = useState<Omit<InspectionCreate, 'hive_id'>>({
     temperature: 0,
     humidity: 0,
     weight: 0,
@@ -53,7 +53,6 @@ const InspectionsPage: React.FC = () => {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!selectedHiveId) return;
-
     try {
       await hiveStore.createInspection(parseInt(selectedHiveId), inspectionData);
       setInspectionData({
@@ -197,13 +196,13 @@ const InspectionsPage: React.FC = () => {
                       {inspection.created_at ? new Date(inspection.created_at).toLocaleDateString() : '—'}
                     </Typography>
                     <Typography>
-                      <strong>Температура:</strong> {'temperature' in inspection ? (inspection as any).temperature : '—'}°C
+                      <strong>Температура:</strong> {inspection.temperature ?? '—'}°C
                     </Typography>
                     <Typography>
-                      <strong>Влажность:</strong> {'humidity' in inspection ? (inspection as any).humidity : '—'}%
+                      <strong>Влажность:</strong> {inspection.humidity ?? '—'}%
                     </Typography>
                     <Typography>
-                      <strong>Вес:</strong> {'weight' in inspection ? (inspection as any).weight : '—'} кг
+                      <strong>Вес:</strong> {inspection.weight ?? '—'} кг
                     </Typography>
                     {inspection.notes && (
                       <Typography>
@@ -211,7 +210,11 @@ const InspectionsPage: React.FC = () => {
                       </Typography>
                     )}
                     <Typography>
-                      <strong>Status:</strong> {inspection.status === 'healthy' ? 'Healthy' : inspection.status === 'warning' ? 'Warning' : inspection.status === 'critical' ? 'Critical' : '—'}
+                      <strong>Status:</strong> {
+                        inspection.status === 'healthy' ? 'Healthy' :
+                        inspection.status === 'warning' ? 'Warning' :
+                        inspection.status === 'critical' ? 'Critical' : 'Unknown'
+                      }
                     </Typography>
                   </CardContent>
                 </Card>

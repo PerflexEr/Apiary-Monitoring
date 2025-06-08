@@ -31,7 +31,7 @@ if config.config_file_name is not None:
 target_metadata = Base.metadata
 
 def get_url():
-    return os.getenv("DATABASE_URL", "postgresql+psycopg2://apiary:apiary123@postgres:5432/apiary_db")
+    return os.getenv("DATABASE_URL", "postgresql+psycopg2://apiary:apiary123@localhost:5432/apiary_db")
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode."""

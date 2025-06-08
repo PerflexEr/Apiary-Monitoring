@@ -8,7 +8,7 @@ interface Hive {
   id: number;
   name: string;
   location: string;
-  status: 'good' | 'warning' | 'critical';
+  status: 'healthy' | 'warning' | 'critical';
   lastInspection: string | null;
   user_id: number;
   created_at: string;
@@ -175,13 +175,15 @@ export class HiveStore {
   };
 
   // Добавление новой инспекции
-  createInspection = async (hiveId: number, inspectionData: InspectionCreate) => {
+  createInspection = async (hiveId: number, inspectionData: Omit<InspectionCreate, 'hive_id'>) => {
     try {
       this.setLoading(true);
       this.setError(null);
+      // Формируем корректный snake_case объект
+      const payload = { ...inspectionData, hive_id: hiveId };
       const response = await hiveApi.post<Inspection>(
-        `/inspections/`, // исправлен путь
-        { ...inspectionData, hive_id: hiveId }
+        `/inspections/`,
+        payload
       );
       runInAction(() => {
         this.inspections.push(response.data);

@@ -57,6 +57,8 @@ def setup_cors(app: FastAPI):
         "http://localhost:5173",  # Vite default port
         "http://127.0.0.1:5173",
         "http://0.0.0.0:5173",
+        "http://localhost:5174",  # Vite custom port
+        "http://127.0.0.1:5174",
         "*"  # Разрешаем все origins в режиме разработки
     ]
     

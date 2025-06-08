@@ -6,10 +6,16 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 import os
 
-SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://apiary:apiary123@localhost:5432/apiary_db")
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://apiary:apiary123@localhost:5433/apiary_db")
 
-engine = create_async_engine(SQLALCHEMY_DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://"))
-SessionLocal = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+if os.getenv("ALEMBIC") == "1":
+    # Для Alembic нужен sync engine
+    engine = create_engine(SQLALCHEMY_DATABASE_URL.replace("postgresql+asyncpg://", "postgresql+psycopg2://").replace("postgresql://", "postgresql+psycopg2://"))
+    SessionLocal = sessionmaker(engine, expire_on_commit=False)
+else:
+    # Для приложения — async engine
+    engine = create_async_engine(SQLALCHEMY_DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://"))
+    SessionLocal = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 Base = declarative_base()
 

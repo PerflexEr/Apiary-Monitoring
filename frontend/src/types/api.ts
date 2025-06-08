@@ -22,7 +22,7 @@ export interface Hive {
   id: number;
   name: string;
   location: string;
-  status: 'active' | 'inactive';
+  status: 'healthy' | 'warning' | 'critical';
   queen_year: number;
   frames_count: number;
   description?: string | null;

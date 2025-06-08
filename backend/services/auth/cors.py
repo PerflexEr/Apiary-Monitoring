@@ -14,6 +14,8 @@ def setup_cors(app):
         "http://0.0.0.0:3000",
         "http://localhost:5173",  # Vite default port
         "http://127.0.0.1:5173",
+        "http://localhost:5174",  # Vite custom port
+        "http://127.0.0.1:5174",
     ]
     
     # В режиме разработки добавляем дополнительные варианты
@@ -22,6 +24,8 @@ def setup_cors(app):
             "http://localhost:4173",  # Vite preview
             "http://127.0.0.1:4173",
             "http://0.0.0.0:3000",
+            "http://localhost:5174",
+            "http://127.0.0.1:5174",
         ])
         # НЕ используем "*" для избежания CORS проблем с credentials
     

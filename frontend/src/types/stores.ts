@@ -12,7 +12,7 @@ export interface Hive {
   id: number;
   name: string;
   location: string;
-  status: 'good' | 'warning' | 'critical';
+  status: 'healthy' | 'warning' | 'critical';
   lastInspection: string | null;
   user_id: number;
   created_at: string;
@@ -23,13 +23,17 @@ export interface Hive {
 
 export interface Inspection {
   id: number;
-  hiveId: number;
+  hive_id: number;
   notes: string;
   status: 'healthy' | 'warning' | 'critical';
+  temperature: number;
+  humidity: number;
+  weight: number;
   created_at: string;
 }
 
 export interface InspectionCreate {
+  hive_id: number;
   temperature: number;
   humidity: number;
   weight: number;

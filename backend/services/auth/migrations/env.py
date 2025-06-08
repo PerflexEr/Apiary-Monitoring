@@ -36,7 +36,7 @@ def do_run_migrations(connection: Connection) -> None:
 
 async def run_async_migrations() -> None:
     configuration = config.get_section(config.config_ini_section)
-    configuration["sqlalchemy.url"] = "postgresql+asyncpg://apiary:apiary123@postgres:5432/apiary_db"
+    configuration["sqlalchemy.url"] = "postgresql+asyncpg://apiary:apiary123@localhost:5432/apiary_db"
 
     connectable = async_engine_from_config(
         configuration,
@@ -55,4 +55,4 @@ def run_migrations_online() -> None:
 if context.is_offline_mode():
     run_migrations_offline()
 else:
-    run_migrations_online() 
+    run_migrations_online()

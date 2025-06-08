@@ -6,6 +6,14 @@ from sqlalchemy.orm import selectinload
 from shared.service import BaseService
 from . import models, schemas
 
+ALLOWED_STATUSES = {"healthy", "warning", "critical"}
+
+def validate_status(status: Optional[str]) -> str:
+    """Гарантирует, что статус всегда один из допустимых."""
+    if status and status in ALLOWED_STATUSES:
+        return status
+    return "healthy"
+
 
 class HiveService(BaseService[models.Hive]):
     def __init__(self):
@@ -14,7 +22,10 @@ class HiveService(BaseService[models.Hive]):
     async def create_hive(
         self, db: AsyncSession, hive: schemas.HiveCreate, user_id: int
     ) -> models.Hive:
-        db_hive = models.Hive(**hive.model_dump(), user_id=user_id)
+        # Валидируем статус при создании улья
+        hive_data = hive.model_dump()
+        hive_data["status"] = validate_status(hive_data.get("status"))
+        db_hive = models.Hive(**hive_data, user_id=user_id)
         db.add(db_hive)
         await db.commit()
         await db.refresh(db_hive)
@@ -64,7 +75,7 @@ class HiveService(BaseService[models.Hive]):
         # Set hive status to latest inspection status
         if hive.inspections:
             latest = max(hive.inspections, key=lambda i: i.created_at)
-            hive.status = latest.status or "healthy"
+            hive.status = validate_status(latest.status)
         else:
             hive.status = "healthy"
 
@@ -93,10 +104,12 @@ class InspectionService(BaseService[models.Inspection]):
     async def create_inspection(
         self, db: AsyncSession, inspection: schemas.InspectionCreate, user_id: int
     ) -> models.Inspection:
-        db_inspection = models.Inspection(
-            **inspection.model_dump(),
-            user_id=user_id
-        )
+        # Валидируем статус перед созданием
+        valid_status = validate_status(inspection.status)
+        data = inspection.model_dump()
+        data["status"] = valid_status  # перезаписываем статус
+        data["user_id"] = user_id
+        db_inspection = models.Inspection(**data)
         db.add(db_inspection)
         await db.commit()
         await db.refresh(db_inspection)

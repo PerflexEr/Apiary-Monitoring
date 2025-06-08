@@ -169,7 +169,11 @@ const HiveDetailsPage: React.FC = observer(() => {
                     <strong>Location:</strong> {hive.location}
                   </Typography>
                   <Typography>
-                    <strong>Health:</strong> {hive.status === 'good' ? 'Healthy' : hive.status === 'warning' ? 'Warning' : hive.status === 'critical' ? 'Critical' : hive.status}
+                    <strong>Health:</strong> {
+                      hive.status === 'healthy' ? 'Healthy' :
+                      hive.status === 'warning' ? 'Warning' :
+                      hive.status === 'critical' ? 'Critical' : 'Unknown'
+                    }
                   </Typography>
                   <Typography>
                     <strong>Created:</strong> {new Date(hive.created_at).toLocaleDateString()}
@@ -233,7 +237,11 @@ const HiveDetailsPage: React.FC = observer(() => {
                     {new Date(inspection.created_at).toLocaleDateString()}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Status: {inspection.status === 'healthy' ? 'Healthy' : inspection.status === 'warning' ? 'Warning' : inspection.status === 'critical' ? 'Critical' : '—'}
+                    Status: {
+                      inspection.status === 'healthy' ? 'Healthy' :
+                      inspection.status === 'warning' ? 'Warning' :
+                      inspection.status === 'critical' ? 'Critical' : 'Unknown'
+                    }
                   </Typography>
                   <Typography>{inspection.notes}</Typography>
                 </TimelineContent>

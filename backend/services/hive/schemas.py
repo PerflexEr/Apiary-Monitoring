@@ -2,6 +2,13 @@ from typing import Optional, List
 from pydantic import BaseModel
 from datetime import datetime
 from shared.base_models import BaseSchema
+from enum import Enum
+
+
+class StatusEnum(str, Enum):
+    healthy = "healthy"
+    warning = "warning"
+    critical = "critical"
 
 
 class InspectionBase(BaseSchema):
@@ -9,7 +16,7 @@ class InspectionBase(BaseSchema):
     humidity: float
     weight: float
     notes: Optional[str] = None
-    status: Optional[str] = None  # теперь только status
+    status: Optional[StatusEnum] = StatusEnum.healthy
 
 
 class InspectionCreate(InspectionBase):
@@ -21,7 +28,7 @@ class InspectionUpdate(BaseSchema):
     humidity: Optional[float] = None
     weight: Optional[float] = None
     notes: Optional[str] = None
-    status: Optional[str] = None  # теперь только status
+    status: Optional[StatusEnum] = None
 
 
 class InspectionResponse(InspectionBase):
@@ -35,7 +42,7 @@ class InspectionResponse(InspectionBase):
 class HiveBase(BaseSchema):
     name: str
     location: str
-    status: str = "healthy"  # healthy по умолчанию
+    status: StatusEnum = StatusEnum.healthy
     queen_year: int
     frames_count: int
     description: Optional[str] = None
@@ -48,7 +55,7 @@ class HiveCreate(HiveBase):
 class HiveUpdate(BaseSchema):
     name: Optional[str] = None
     location: Optional[str] = None
-    status: Optional[str] = None  # Простая строка
+    status: Optional[StatusEnum] = None
     queen_year: Optional[int] = None
     frames_count: Optional[int] = None
     description: Optional[str] = None

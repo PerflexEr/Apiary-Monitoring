@@ -68,7 +68,7 @@ const DashboardPage: React.FC = observer(() => {
   const activeAlerts = monitoringStore.getUnresolvedAlerts();
   const totalHives = hiveStore.hives.length;
   // Вспомогательная функция для поддержки старых и новых значений статуса
-  const isHealthy = (status: string) => status === 'healthy' || status === 'good';
+  const isHealthy = (status: string) => status === 'healthy';
   const isWarning = (status: string) => status === 'warning';
   const isCritical = (status: string) => status === 'critical';
 
@@ -183,7 +183,13 @@ const DashboardPage: React.FC = observer(() => {
                   Location: {hive.location}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Health: {isHealthy(hive.status) ? 'Healthy' : isWarning(hive.status) ? 'Warning' : isCritical(hive.status) ? 'Critical' : '—'}
+                  Health: {isHealthy(hive.status)
+                    ? 'Healthy'
+                    : isWarning(hive.status)
+                    ? 'Warning'
+                    : isCritical(hive.status)
+                    ? 'Critical'
+                    : 'Unknown'}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   Created: {new Date(hive.created_at).toLocaleDateString()}
