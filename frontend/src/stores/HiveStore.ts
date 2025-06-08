@@ -53,6 +53,15 @@ export class HiveStore {
     }
   }
 
+  // Utility to get the latest inspection status for a hive
+  getLatestInspectionStatus(hiveId: number): 'healthy' | 'warning' | 'critical' | undefined {
+    const inspections = this.inspections.filter(i => i.hive_id === hiveId);
+    if (inspections.length === 0) return undefined;
+    // Sort by created_at descending
+    const sorted = inspections.slice().sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    return sorted[0].status;
+  }
+
   // Fetch all hives
   fetchHives = async () => {
     try {
@@ -61,12 +70,34 @@ export class HiveStore {
       const response = await hiveApi.get<Hive[]>('hives/');
       runInAction(() => {
         this.hives = response.data;
+        // After loading hives, fetch all inspections for all hives and update their status
+        this.updateAllHivesStatusByInspections();
       });
     } catch (error) {
       console.error('Failed to fetch hives:', error);
       this.setError(error);
     } finally {
       this.setLoading(false);
+    }
+  };
+
+  // Fetch all inspections for all hives and update their status
+  updateAllHivesStatusByInspections = async () => {
+    try {
+      const allInspections: Inspection[] = [];
+      for (const hive of this.hives) {
+        const response = await hiveApi.get<Inspection[]>(`/hives/${hive.id}/inspections/`);
+        allInspections.push(...response.data);
+      }
+      runInAction(() => {
+        this.inspections = allInspections;
+        this.hives = this.hives.map(hive => {
+          const latestStatus = this.getLatestInspectionStatus(hive.id);
+          return latestStatus ? { ...hive, status: latestStatus } : hive;
+        });
+      });
+    } catch (error) {
+      console.error('Failed to update hive statuses by inspections:', error);
     }
   };
 
@@ -160,9 +191,18 @@ export class HiveStore {
     try {
       this.setLoading(true);
       this.setError(null);
-      const response = await hiveApi.get<Inspection[]>(`/hives/${hiveId}/inspections/`); // исправлен путь
+      const response = await hiveApi.get<Inspection[]>(`/hives/${hiveId}/inspections/`);
       runInAction(() => {
         this.inspections = response.data;
+        // Update hive status if possible
+        const latestStatus = this.getLatestInspectionStatus(hiveId);
+        const hiveIdx = this.hives.findIndex(h => h.id === hiveId);
+        if (hiveIdx !== -1 && latestStatus) {
+          this.hives[hiveIdx].status = latestStatus;
+        }
+        if (this.selectedHive && this.selectedHive.id === hiveId && latestStatus) {
+          this.selectedHive.status = latestStatus;
+        }
       });
       return response.data;
     } catch (error) {
@@ -179,7 +219,6 @@ export class HiveStore {
     try {
       this.setLoading(true);
       this.setError(null);
-      // Формируем корректный snake_case объект
       const payload = { ...inspectionData, hive_id: hiveId };
       const response = await hiveApi.post<Inspection>(
         `/inspections/`,
@@ -187,6 +226,15 @@ export class HiveStore {
       );
       runInAction(() => {
         this.inspections.push(response.data);
+        // Update hive status immediately after new inspection
+        const latestStatus = this.getLatestInspectionStatus(hiveId);
+        const hiveIdx = this.hives.findIndex(h => h.id === hiveId);
+        if (hiveIdx !== -1 && latestStatus) {
+          this.hives[hiveIdx].status = latestStatus;
+        }
+        if (this.selectedHive && this.selectedHive.id === hiveId && latestStatus) {
+          this.selectedHive.status = latestStatus;
+        }
       });
       return response.data;
     } catch (error) {
