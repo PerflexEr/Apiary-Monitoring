@@ -197,17 +197,17 @@ const HivesPage: React.FC = observer(() => {
                   <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
                     <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <CalendarTodayIcon fontSize="small" />
-                      Год матки: {hive.queen_year}
+                      Queen Year: {hive.queen_year}
                     </Typography>
 
                     <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <GridOnIcon fontSize="small" />
-                      Количество рамок: {hive.frames_count}
+                      Frames Count: {hive.frames_count}
                     </Typography>
 
                     <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <CalendarTodayIcon fontSize="small" />
-                      Создан: {new Date(hive.created_at).toLocaleDateString()}
+                      Created: {new Date(hive.created_at).toLocaleDateString()}
                     </Typography>
                   </Box>
                 </CardContent>

@@ -17,9 +17,9 @@ interface Hive {
   frames_count: number;
 }
 
-// Удаляем локальный интерфейс Inspection, используем глобальный тип
+// Remove local Inspection interface, use global type
 
-// Добавим тип для создания инспекции
+// Add type for creating inspection
 export interface InspectionCreate {
   temperature: number;
   humidity: number;
@@ -53,7 +53,7 @@ export class HiveStore {
     }
   }
 
-  // Получение всех ульев
+  // Fetch all hives
   fetchHives = async () => {
     try {
       this.setLoading(true);
@@ -70,7 +70,7 @@ export class HiveStore {
     }
   };
 
-  // Получение конкретного улья по ID
+  // Fetch a specific hive by ID
   fetchHiveById = async (id: number) => {
     try {
       this.setLoading(true);
@@ -89,7 +89,7 @@ export class HiveStore {
     }
   };
 
-  // Создание нового улья
+  // Create a new hive
   createHive = async (hiveData: Partial<Hive>) => {
     try {
       this.setLoading(true);
@@ -108,7 +108,7 @@ export class HiveStore {
     }
   };
 
-  // Обновление улья
+  // Update hive
   updateHive = async (id: number, hiveData: Partial<Hive>) => {
     try {
       this.setLoading(true);
@@ -133,7 +133,7 @@ export class HiveStore {
     }
   };
 
-  // Удаление улья
+  // Delete hive
   deleteHive = async (id: number) => {
     try {
       this.setLoading(true);
@@ -155,7 +155,7 @@ export class HiveStore {
     }
   };
 
-  // Получение инспекций улья
+  // Fetch hive inspections
   fetchHiveInspections = async (hiveId: number) => {
     try {
       this.setLoading(true);
@@ -174,7 +174,7 @@ export class HiveStore {
     }
   };
 
-  // Добавление новой инспекции
+  // Add new inspection
   createInspection = async (hiveId: number, inspectionData: Omit<InspectionCreate, 'hive_id'>) => {
     try {
       this.setLoading(true);

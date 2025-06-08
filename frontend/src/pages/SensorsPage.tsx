@@ -117,19 +117,19 @@ const SensorsPage: React.FC = () => {
   return (
     <Box sx={{ p: 3 }}>
       <Typography variant="h4" gutterBottom>
-        Сенсоры (Мониторинг)
+        Sensors (Monitoring)
       </Typography>
 
       <Box sx={{ mb: 2, display: 'flex', gap: 2 }}>
         <FormControl sx={{ minWidth: 200 }}>
-          <InputLabel id="hive-filter-label">Фильтр по улью</InputLabel>
+          <InputLabel id="hive-filter-label">Hive Filter</InputLabel>
           <Select
             labelId="hive-filter-label"
             value={filterHiveId}
-            label="Фильтр по улью"
+            label="Hive Filter"
             onChange={(e) => setFilterHiveId(e.target.value as string)}
           >
-            <MenuItem value="">Все ульи</MenuItem>
+            <MenuItem value="">All Hives</MenuItem>
             {hiveStore.hives.map((hive: Hive) => (
               <MenuItem key={hive.id} value={String(hive.id)}>
                 {hive.name} - {hive.location}
@@ -138,7 +138,7 @@ const SensorsPage: React.FC = () => {
           </Select>
         </FormControl>
         <Button variant="contained" startIcon={<Add />} onClick={() => handleOpenDialog()}>
-          Добавить сенсор
+          Add Sensor
         </Button>
       </Box>
 
@@ -148,14 +148,14 @@ const SensorsPage: React.FC = () => {
             <Card>
               <CardContent>
                 <Typography variant="h6">{sensor.name}</Typography>
-                <Typography>Тип: {sensor.sensor_type}</Typography>
-                <Typography>Улей: {hiveStore.hives.find(h => h.id === sensor.hive_id)?.name || '—'}</Typography>
-                <Typography>Статус: {sensor.is_active ? 'Активен' : 'Отключен'}</Typography>
+                <Typography>Type: {sensor.sensor_type}</Typography>
+                <Typography>Hive: {hiveStore.hives.find(h => h.id === sensor.hive_id)?.name || '—'}</Typography>
+                <Typography>Status: {sensor.is_active ? 'Active' : 'Inactive'}</Typography>
                 <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
-                  <Tooltip title="Изменить">
+                  <Tooltip title="Edit">
                     <IconButton onClick={() => handleOpenDialog(sensor)}><Edit /></IconButton>
                   </Tooltip>
-                  <Tooltip title="Подробнее">
+                  <Tooltip title="Details">
                     <IconButton onClick={() => handleShowStats(sensor.id)}><Info /></IconButton>
                   </Tooltip>
                 </Box>
@@ -166,12 +166,12 @@ const SensorsPage: React.FC = () => {
       </Grid>
 
       <Dialog open={openDialog} onClose={handleCloseDialog}>
-        <DialogTitle>{editMode ? 'Редактировать сенсор' : 'Добавить сенсор'}</DialogTitle>
+        <DialogTitle>{editMode ? 'Edit Sensor' : 'Add Sensor'}</DialogTitle>
         <form onSubmit={handleSubmit}>
           <DialogContent sx={{ minWidth: 350 }}>
             <TextField
               margin="dense"
-              label="Название"
+              label="Name"
               name="name"
               value={sensorData.name}
               onChange={handleInputChange}
@@ -180,7 +180,7 @@ const SensorsPage: React.FC = () => {
             />
             <TextField
               margin="dense"
-              label="Тип сенсора"
+              label="Sensor Type"
               name="sensor_type"
               value={sensorData.sensor_type}
               onChange={handleInputChange}
@@ -188,12 +188,12 @@ const SensorsPage: React.FC = () => {
               required
             />
             <FormControl fullWidth margin="dense">
-              <InputLabel id="hive-select-label">Улей</InputLabel>
+              <InputLabel id="hive-select-label">Hive</InputLabel>
               <Select
                 labelId="hive-select-label"
                 name="hive_id"
                 value={sensorData.hive_id}
-                label="Улей"
+                label="Hive"
                 onChange={handleSelectChange}
                 required
               >
@@ -206,33 +206,33 @@ const SensorsPage: React.FC = () => {
             </FormControl>
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleCloseDialog}>Отмена</Button>
-            <Button type="submit" variant="contained">{editMode ? 'Сохранить' : 'Добавить'}</Button>
+            <Button onClick={handleCloseDialog}>Cancel</Button>
+            <Button type="submit" variant="contained">{editMode ? 'Save' : 'Add'}</Button>
           </DialogActions>
         </form>
       </Dialog>
 
       <Dialog open={statsDialogOpen} onClose={() => setStatsDialogOpen(false)}>
-        <DialogTitle>Статистика сенсора</DialogTitle>
+        <DialogTitle>Sensor Statistics</DialogTitle>
         <DialogContent sx={{ minWidth: 350 }}>
-          {statsLoading && <Typography>Загрузка...</Typography>}
+          {statsLoading && <Typography>Loading...</Typography>}
           {statsError && <Typography color="error">{statsError}</Typography>}
           {sensorStats && !statsLoading && !statsError && (
             <Box>
               <Typography><b>ID:</b> {sensorStats.sensor_id}</Typography>
-              <Typography><b>Название:</b> {sensorStats.sensor_name}</Typography>
-              <Typography><b>Тип:</b> {sensorStats.sensor_type}</Typography>
-              <Typography><b>Последнее значение:</b> {sensorStats.last_value ?? '—'}</Typography>
-              <Typography><b>Минимум:</b> {sensorStats.min_value ?? '—'}</Typography>
-              <Typography><b>Максимум:</b> {sensorStats.max_value ?? '—'}</Typography>
-              <Typography><b>Среднее:</b> {sensorStats.avg_value ?? '—'}</Typography>
-              <Typography><b>Батарея:</b> {sensorStats.battery_level ?? '—'}</Typography>
-              <Typography><b>Последнее измерение:</b> {sensorStats.last_measurement_time ? new Date(sensorStats.last_measurement_time).toLocaleString() : '—'}</Typography>
+              <Typography><b>Name:</b> {sensorStats.sensor_name}</Typography>
+              <Typography><b>Type:</b> {sensorStats.sensor_type}</Typography>
+              <Typography><b>Last Value:</b> {sensorStats.last_value ?? '—'}</Typography>
+              <Typography><b>Min:</b> {sensorStats.min_value ?? '—'}</Typography>
+              <Typography><b>Max:</b> {sensorStats.max_value ?? '—'}</Typography>
+              <Typography><b>Average:</b> {sensorStats.avg_value ?? '—'}</Typography>
+              <Typography><b>Battery:</b> {sensorStats.battery_level ?? '—'}</Typography>
+              <Typography><b>Last Measurement:</b> {sensorStats.last_measurement_time ? new Date(sensorStats.last_measurement_time).toLocaleString() : '—'}</Typography>
             </Box>
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setStatsDialogOpen(false)}>Закрыть</Button>
+          <Button onClick={() => setStatsDialogOpen(false)}>Close</Button>
         </DialogActions>
       </Dialog>
     </Box>

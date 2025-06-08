@@ -26,7 +26,7 @@ export class NotificationStore {
     this.error = message;
   }
 
-  // Получение настроек уведомлений
+  // Fetch notification preferences
   fetchPreferences = async () => {
     try {
       this.setLoading(true);
@@ -48,7 +48,7 @@ export class NotificationStore {
     }
   };
 
-  // Обновление настроек уведомлений
+  // Update notification preferences
   updatePreferences = async (preferences: NotificationPreference) => {
     try {
       this.setLoading(true);
@@ -71,7 +71,7 @@ export class NotificationStore {
     }
   };
 
-  // Отметить уведомление как прочитанное
+  // Mark notification as read
   markAsRead = async (notificationId: number) => {
     try {
       this.setLoading(true);
@@ -87,7 +87,7 @@ export class NotificationStore {
     }
   };
 
-  // Создать новое уведомление
+  // Create new notification
   createNotification = async (notification: Partial<Notification>) => {
     try {
       this.setLoading(true);
@@ -104,7 +104,7 @@ export class NotificationStore {
     }
   };
 
-  // Получение всех уведомлений
+  // Fetch all notifications
   fetchNotifications = async () => {
     try {
       this.setLoading(true);
@@ -136,7 +136,7 @@ export class NotificationStore {
     }
   };
 
-  // Получение ожидающих уведомлений
+  // Fetch pending notifications
   fetchPendingNotifications = async () => {
     try {
       this.setLoading(true);
@@ -168,7 +168,7 @@ export class NotificationStore {
     }
   };
 
-  // Получение шаблонов уведомлений
+  // Fetch notification templates
   fetchTemplates = async () => {
     try {
       this.setLoading(true);
@@ -192,7 +192,7 @@ export class NotificationStore {
     }
   };
 
-  // Создание нового шаблона
+  // Create new template
   createTemplate = async (template: Partial<NotificationTemplate>) => {
     try {
       this.setLoading(true);
@@ -209,7 +209,7 @@ export class NotificationStore {
     }
   };
 
-  // Создать настройки уведомлений (POST /settings/)
+  // Create notification preferences (POST /settings/)
   createPreferences = async (prefs: NotificationPreference) => {
     try {
       this.setLoading(true);

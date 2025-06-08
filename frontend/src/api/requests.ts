@@ -1,14 +1,14 @@
 // frontend/src/api/requests.ts
 import axios, { AxiosError } from 'axios';
 
-// Базовая конфигурация для всех сервисов
+// Base configuration for all services
 const baseConfig = {
   headers: {
     'Content-Type': 'application/json',
   }
 };
 
-// Создаем отдельные инстансы для каждого сервиса с правильными портами
+// Create separate instances for each service with correct ports
 export const authApi = axios.create({
   ...baseConfig,
   baseURL: 'http://localhost:8000',
@@ -29,7 +29,7 @@ export const notificationApi = axios.create({
   baseURL: 'http://localhost:8003',
 });
 
-// Функция для преобразования данных аутентификации в FormData
+// Function to convert authentication data to FormData
 export const createAuthFormData = (username: string, password: string) => {
   const formData = new URLSearchParams();
   formData.append('username', username);
@@ -37,7 +37,7 @@ export const createAuthFormData = (username: string, password: string) => {
   return formData;
 };
 
-// Обработчики ответа для всех инстансов
+// Response interceptors for all instances
 const responseInterceptor = (response: any) => {
   return response;
 };
@@ -52,10 +52,10 @@ const errorInterceptor = async (error: AxiosError) => {
   return Promise.reject(error);
 };
 
-// Добавляем перехватчики ко всем инстансам
+// Add interceptors to all instances
 [authApi, hiveApi, monitoringApi, notificationApi].forEach(api => {
   api.interceptors.response.use(responseInterceptor, errorInterceptor);
-  // Добавляем обработчик запросов для логирования
+  // Add request handler for logging
   api.interceptors.request.use((config) => {
     console.log(`🚀 ${config.method?.toUpperCase()} ${config.url}`, config);
     console.log('Request headers:', config.headers);
@@ -63,7 +63,7 @@ const errorInterceptor = async (error: AxiosError) => {
   });
 });
 
-// Функция для установки токена авторизации
+// Function to set authorization token
 export const setAuthToken = (token: string | null) => {
   const authHeader = token ? `Bearer ${token}` : '';
   
@@ -74,7 +74,7 @@ export const setAuthToken = (token: string | null) => {
   console.log('Auth token updated for all API instances');
 };
 
-// Функция для проверки здоровья сервисов
+// Function to check service health
 export const checkServiceHealth = async () => {
   const services = [
     { name: 'auth', api: authApi, path: '/health' },

@@ -30,6 +30,14 @@ const SettingsPage: React.FC = observer(() => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
+  React.useEffect(() => {
+    if (!authStore.initialized) {
+      authStore.initialize();
+    } else if (!authStore.user && !authStore.loading) {
+      authStore.checkAuth();
+    }
+  }, [authStore, authStore.initialized, authStore.loading, authStore.user]);
+
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -41,17 +49,9 @@ const SettingsPage: React.FC = observer(() => {
     }
 
     try {
-      // TODO: Implement password change in AuthStore
-      await authStore.changePassword(
-        passwordData.currentPassword,
-        passwordData.newPassword
-      );
-      setSuccess('Password successfully changed');
-      setPasswordData({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: '',
-      });
+      // Password change is not implemented yet
+      setError('Password change is not implemented.');
+      return;
     } catch (err: any) {
       setError(err.message || 'Failed to change password');
     }
@@ -70,34 +70,42 @@ const SettingsPage: React.FC = observer(() => {
               <Typography variant="h6" gutterBottom>
                 Profile Information
               </Typography>
-              <Box sx={{ mb: 2 }}>
-                <Typography color="text.secondary" gutterBottom>
-                  Email
-                </Typography>
-                <Typography>{authStore.user?.email}</Typography>
-              </Box>
-              <Box sx={{ mb: 2 }}>
-                <Typography color="text.secondary" gutterBottom>
-                  Username
-                </Typography>
-                <Typography>{authStore.user?.username}</Typography>
-              </Box>
-              <Box sx={{ mb: 2 }}>
-                <Typography color="text.secondary" gutterBottom>
-                  Account Status
-                </Typography>
-                <Typography>
-                  {authStore.user?.is_active ? 'Active' : 'Inactive'}
-                </Typography>
-              </Box>
-              <Box sx={{ mb: 2 }}>
-                <Typography color="text.secondary" gutterBottom>
-                  Account Type
-                </Typography>
-                <Typography>
-                  {authStore.user?.is_superuser ? 'Administrator' : 'Regular User'}
-                </Typography>
-              </Box>
+              {authStore.loading ? (
+                <Typography>Loading profile...</Typography>
+              ) : !authStore.user ? (
+                <Alert severity="warning">No profile data available.</Alert>
+              ) : (
+                <>
+                  <Box sx={{ mb: 2 }}>
+                    <Typography color="text.secondary" gutterBottom>
+                      Email
+                    </Typography>
+                    <Typography>{authStore.user.email}</Typography>
+                  </Box>
+                  <Box sx={{ mb: 2 }}>
+                    <Typography color="text.secondary" gutterBottom>
+                      Username
+                    </Typography>
+                    <Typography>{authStore.user.username}</Typography>
+                  </Box>
+                  <Box sx={{ mb: 2 }}>
+                    <Typography color="text.secondary" gutterBottom>
+                      Account Status
+                    </Typography>
+                    <Typography>
+                      {authStore.user.is_active ? 'Active' : 'Inactive'}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ mb: 2 }}>
+                    <Typography color="text.secondary" gutterBottom>
+                      Account Type
+                    </Typography>
+                    <Typography>
+                      {authStore.user.is_superuser ? 'Administrator' : 'Regular User'}
+                    </Typography>
+                  </Box>
+                </>
+              )}
             </CardContent>
           </Card>
         </Grid>

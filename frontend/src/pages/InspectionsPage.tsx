@@ -30,14 +30,14 @@ const InspectionsPage: React.FC = () => {
   });
 
   useEffect(() => {
-    // Загружаем список ульев при монтировании компонента
+    // Load the list of hives on component mount
     hiveStore.fetchHives();
   }, []);
 
   const handleHiveChange = (event: SelectChangeEvent) => {
     setSelectedHiveId(event.target.value);
     if (event.target.value) {
-      // Загружаем инспекции для выбранного улья
+      // Load inspections for the selected hive
       hiveStore.fetchHiveInspections(parseInt(event.target.value));
     }
   };
@@ -70,7 +70,7 @@ const InspectionsPage: React.FC = () => {
   return (
     <Box sx={{ p: 3 }}>
       <Typography variant="h4" gutterBottom>
-        Инспекция улья
+        Hive Inspection
       </Typography>
 
       <Card sx={{ mb: 3 }}>
@@ -78,12 +78,12 @@ const InspectionsPage: React.FC = () => {
           <Grid container spacing={3}>
             <Grid item xs={12} md={4}>
               <FormControl fullWidth>
-                <InputLabel id="hive-select-label">Выберите улей</InputLabel>
+                <InputLabel id="hive-select-label">Select Hive</InputLabel>
                 <Select
                   labelId="hive-select-label"
                   id="hive-select"
                   value={selectedHiveId}
-                  label="Выберите улей"
+                  label="Select Hive"
                   onChange={handleHiveChange}
                 >
                   {hiveStore.hives.map((hive: Hive) => (
@@ -106,7 +106,7 @@ const InspectionsPage: React.FC = () => {
                 <Grid item xs={12} md={4}>
                   <TextField
                     fullWidth
-                    label="Температура"
+                    label="Temperature"
                     name="temperature"
                     type="number"
                     value={inspectionData.temperature}
@@ -117,7 +117,7 @@ const InspectionsPage: React.FC = () => {
                 <Grid item xs={12} md={4}>
                   <TextField
                     fullWidth
-                    label="Влажность"
+                    label="Humidity"
                     name="humidity"
                     type="number"
                     value={inspectionData.humidity}
@@ -128,7 +128,7 @@ const InspectionsPage: React.FC = () => {
                 <Grid item xs={12} md={4}>
                   <TextField
                     fullWidth
-                    label="Вес"
+                    label="Weight"
                     name="weight"
                     type="number"
                     value={inspectionData.weight}
@@ -139,7 +139,7 @@ const InspectionsPage: React.FC = () => {
                 <Grid item xs={12}>
                   <TextField
                     fullWidth
-                    label="Заметки"
+                    label="Notes"
                     name="notes"
                     multiline
                     rows={4}
@@ -172,7 +172,7 @@ const InspectionsPage: React.FC = () => {
                     color="primary"
                     size="large"
                   >
-                    Добавить инспекцию
+                    Add Inspection
                   </Button>
                 </Grid>
               </Grid>
@@ -181,11 +181,11 @@ const InspectionsPage: React.FC = () => {
         </Card>
       )}
 
-      {/* Список последних инспекций */}
+      {/* List of recent inspections */}
       {selectedHiveId && hiveStore.inspections.length > 0 && (
         <Box sx={{ mt: 4 }}>
           <Typography variant="h5" gutterBottom>
-            Последние инспекции
+            Recent Inspections
           </Typography>
           <Grid container spacing={2}>
             {hiveStore.inspections.map((inspection) => (
@@ -196,17 +196,17 @@ const InspectionsPage: React.FC = () => {
                       {inspection.created_at ? new Date(inspection.created_at).toLocaleDateString() : '—'}
                     </Typography>
                     <Typography>
-                      <strong>Температура:</strong> {inspection.temperature ?? '—'}°C
+                      <strong>Temperature:</strong> {inspection.temperature ?? '—'}°C
                     </Typography>
                     <Typography>
-                      <strong>Влажность:</strong> {inspection.humidity ?? '—'}%
+                      <strong>Humidity:</strong> {inspection.humidity ?? '—'}%
                     </Typography>
                     <Typography>
-                      <strong>Вес:</strong> {inspection.weight ?? '—'} кг
+                      <strong>Weight:</strong> {inspection.weight ?? '—'} kg
                     </Typography>
                     {inspection.notes && (
                       <Typography>
-                        <strong>Заметки:</strong> {inspection.notes}
+                        <strong>Notes:</strong> {inspection.notes}
                       </Typography>
                     )}
                     <Typography>

@@ -1,7 +1,7 @@
 // frontend/src/utils/errorUtils.ts
 
 /**
- * Извлекает читаемое сообщение об ошибке из различных типов ошибок
+ * Extracts a readable error message from various error types
  */
 export function getErrorMessage(error: unknown, fallback = 'An unexpected error occurred'): string {
   if (typeof error === 'string') {
@@ -50,7 +50,7 @@ export function getErrorMessage(error: unknown, fallback = 'An unexpected error 
 }
 
 /**
- * Проверяет, является ли ошибка сетевой ошибкой
+ * Checks if the error is a network error
  */
 export function isNetworkError(error: unknown): boolean {
   if (error && typeof error === 'object') {
@@ -65,7 +65,7 @@ export function isNetworkError(error: unknown): boolean {
 }
 
 /**
- * Проверяет, является ли ошибка ошибкой аутентификации
+ * Checks if the error is an authentication error
  */
 export function isAuthError(error: unknown): boolean {
   if (error && typeof error === 'object') {
